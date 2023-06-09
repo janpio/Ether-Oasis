@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import WalletButton from '@/components/WalletButton';
 import { AppConfig } from '@/utils/AppConfig';
 
 type IMainProps = {
@@ -28,6 +29,7 @@ const Main = (props: IMainProps) => (
             </h1>
             <h2 className="text-xl">{AppConfig.description}</h2>
           </div>
+          <WalletButton />
         </div>
       </header>
 
