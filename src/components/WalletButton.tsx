@@ -31,6 +31,15 @@ const WalletButton = () => {
     ],
   });
 
+  const truncateString = (str: string) => {
+    if (str.length <= 8) {
+      return str;
+    }
+    const firstFour = str.slice(0, 4);
+    const lastFour = str.slice(-4);
+    return `${firstFour}...${lastFour}`;
+  };
+
   const connectWallet = async () => {
     const wallets = await onboard.connectWallet();
     if (wallets[0]) {
@@ -56,10 +65,21 @@ const WalletButton = () => {
   };
 
   if (walletAddress !== '') {
-    return <button>{walletAddress}</button>;
+    return (
+      <button className="rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white">
+        {truncateString(walletAddress)}
+      </button>
+    );
   }
 
-  return <button onClick={() => connectWallet()}>Connect Wallet</button>;
+  return (
+    <button
+      className="rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
+      onClick={() => connectWallet()}
+    >
+      Connect Wallet
+    </button>
+  );
 };
 
 export default WalletButton;
