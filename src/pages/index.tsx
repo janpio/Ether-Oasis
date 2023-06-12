@@ -20,14 +20,7 @@ const Index = () => {
   }, [walletAddress, ensName]);
 
   return (
-    <Main
-      meta={
-        <Meta
-          title="Ether Oasis"
-          description="Like your AOL homepage, but for Ethereum."
-        />
-      }
-    >
+    <Main meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}>
       <div className="flex w-full flex-col items-start justify-start">
         <Card
           title={

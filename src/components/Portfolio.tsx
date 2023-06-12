@@ -31,17 +31,30 @@ const Portfolio = () => {
   }, [walletAddress]);
 
   return (
-    <div>
-      <h3>Portfolio</h3>
-      <p>{ethBalance} ETH</p>
-      <ul>
-        {tokensInWallet.map((token) => (
-          <li key={token.address}>
-            {token.symbol}{' '}
-            {Number(ethers.formatEther(token.totalBalance)).toFixed(5)}
-          </li>
-        ))}
-      </ul>
+    <div className="mt-3 flex flex-col">
+      <h3 className="text-2xl font-bold">Wallet</h3>
+      <table className="mt-2 table-fixed">
+        <thead>
+          <tr>
+            <th className="w-1/2 text-left">Token</th>
+            <th className="w-1/2 text-left">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ETH</td>
+            <td>{ethBalance}</td>
+          </tr>
+          {tokensInWallet.map((token) => (
+            <tr key={token.address}>
+              <td>{token.symbol}</td>
+              <td>
+                {Number(ethers.formatEther(token.totalBalance)).toFixed(5)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

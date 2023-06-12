@@ -3,6 +3,6 @@
 export const AppConfig = {
   site_name: 'EtherOasis',
   title: 'Ether Oasis',
-  description: 'Like your AOL homepage, but for Ethereum.',
+  description: 'Trade, Track, Hang.',
   locale: 'en',
 };
