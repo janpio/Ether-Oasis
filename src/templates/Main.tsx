@@ -35,7 +35,7 @@ const Main = (props: IMainProps) => (
         </div>
       </header>
 
-      <main className="content w-full max-w-screen-md py-5 text-xl">
+      <main className="content w-full max-w-screen-lg py-5 text-xl">
         {props.children}
       </main>
 
