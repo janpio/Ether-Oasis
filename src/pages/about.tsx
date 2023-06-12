@@ -33,7 +33,6 @@ const About = () => (
       and comprehensive platform for managing and exploring your Ethereum
       profile.
     </p>
-
   </Main>
 );
 

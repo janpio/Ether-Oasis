@@ -1,12 +1,22 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 /* eslint-disable react/button-has-type */
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import { ethers } from 'ethers';
+import { useContext } from 'react';
 
-const MAINNET_RPC_URL = 'https://mainnet.infura.io/v3/<INFURA_KEY>';
+import { GlobalContext } from '@/context/GlobalContext';
+
+const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL;
 
 const WalletButton = () => {
+  const { walletAddress, updateVariables } = useContext(GlobalContext);
+
+  const handleUpdate = (walletAddr: string) => {
+    updateVariables(walletAddr);
+  };
+
   const injected = injectedModule();
 
   const onboard = Onboard({
@@ -33,6 +43,7 @@ const WalletButton = () => {
         'any'
       );
       const signer = await ethersProvider.getSigner();
+      handleUpdate(signer.address);
       console.log(signer);
       // send a transaction with the ethers provider
       // const txn = await signer.sendTransaction({
@@ -43,6 +54,10 @@ const WalletButton = () => {
       // console.log(receipt)
     }
   };
+
+  if (walletAddress !== '') {
+    return <button>{walletAddress}</button>;
+  }
 
   return <button onClick={() => connectWallet()}>Connect Wallet</button>;
 };

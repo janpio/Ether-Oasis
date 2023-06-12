@@ -14,4 +14,8 @@ module.exports = withBundleAnalyzer({
   // So, the source code is "basePath-ready".
   // You can remove `basePath` if you don't need it.
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_MAINNET_RPC_URL:
+      'https://mainnet.infura.io/v3/[YOUR_INFURA_PROJECT_ID]',
+  },
 });
