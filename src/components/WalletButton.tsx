@@ -19,16 +19,40 @@ const WalletButton = () => {
   const handleUpdate = (
     walletAddr: string,
     ens: string,
-    provider: ethers.BrowserProvider | null
+    provider: ethers.BrowserProvider | ethers.JsonRpcProvider | null
   ) => {
     updateVariables(walletAddr, ens, provider);
   };
 
-  useEffect(() => {
-    if (walletAddress !== '') {
-      setIsConnected(true);
+  const fetchEns = async (
+    address: string,
+    provider: ethers.BrowserProvider | ethers.JsonRpcProvider
+  ) => {
+    if (address && provider) {
+      const localEnsName = await provider.lookupAddress(address);
+      if (localEnsName) {
+        const truncatedEns =
+          localEnsName.substring(0, localEnsName.indexOf('.')).slice(0, 20) +
+          localEnsName.substring(localEnsName.indexOf('.'));
+        return truncatedEns;
+      }
+      return '';
     }
-  }, [walletAddress]);
+    return '';
+  };
+
+  useEffect(() => {
+    const storedWalletAddress = localStorage.getItem('walletAddress');
+    if (storedWalletAddress) {
+      setIsConnected(true);
+      const loadProviderAndENS = async () => {
+        const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL);
+        const ens = await fetchEns(storedWalletAddress, provider);
+        handleUpdate(storedWalletAddress, ens, provider);
+      };
+      loadProviderAndENS();
+    }
+  }, []);
 
   const injected = injectedModule();
 
@@ -63,23 +87,6 @@ const WalletButton = () => {
     return `${firstFour}...${lastFour}`;
   };
 
-  const fetchEns = async (
-    address: string,
-    provider: ethers.BrowserProvider
-  ) => {
-    if (address && provider) {
-      const localEnsName = await provider.lookupAddress(address);
-      if (localEnsName) {
-        const truncatedEns =
-          localEnsName.substring(0, localEnsName.indexOf('.')).slice(0, 20) +
-          localEnsName.substring(localEnsName.indexOf('.'));
-        return truncatedEns;
-      }
-      return '';
-    }
-    return '';
-  };
-
   const buttonTextFiller = () => {
     if (isConnected && isMousingOver === true) {
       return 'Disconnect';
@@ -102,18 +109,20 @@ const WalletButton = () => {
       const ens = await fetchEns(signer.address, localEthersProvider);
       handleUpdate(signer.address, ens, localEthersProvider);
       console.log(signer);
-      setIsMousingOver(false); // Reset mouseover status
-      setIsConnected(true); // Update connection status
+      setIsMousingOver(false);
+      setIsConnected(true);
+      localStorage.setItem('walletAddress', signer.address); // Store the wallet address
     }
   };
 
   const handleDisconnect = async () => {
     const [primaryWallet] = onboard.state.get().wallets;
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    primaryWallet &&
-      (await onboard.disconnectWallet({ label: primaryWallet.label }));
-    handleUpdate('', '', null); // Clear the wallet variables
-    setIsConnected(false); // Update connection status
+    if (primaryWallet) {
+      await onboard.disconnectWallet({ label: primaryWallet.label });
+    }
+    handleUpdate('', '', null);
+    setIsConnected(false);
+    localStorage.removeItem('walletAddress'); // Remove the stored wallet address
   };
 
   if (walletAddress !== '') {

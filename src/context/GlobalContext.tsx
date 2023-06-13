@@ -6,11 +6,11 @@ import React, { createContext, useMemo, useState } from 'react';
 interface GlobalContextType {
   walletAddress: string;
   ensName: string;
-  ethersProvider: ethers.BrowserProvider | null;
+  ethersProvider: ethers.BrowserProvider | ethers.JsonRpcProvider | null;
   updateVariables: (
     walletAddr: string,
     ensName: string,
-    ethersProvider: ethers.BrowserProvider | null
+    ethersProvider: ethers.BrowserProvider | ethers.JsonRpcProvider | null
   ) => void;
 }
 
@@ -27,14 +27,15 @@ export const GlobalContextProvider = ({
 }) => {
   const [walletAddress, setWalletAddress] = useState('');
   const [ensName, setEnsName] = useState<string>('');
-  const [ethersProvider, setEthersProvider] =
-    useState<ethers.BrowserProvider | null>(null);
+  const [ethersProvider, setEthersProvider] = useState<
+    ethers.BrowserProvider | ethers.JsonRpcProvider | null
+  >(null);
 
   // Define the function to update the variables
   const updateVariables = (
     walletAddr: string,
     ens: string,
-    provider: ethers.BrowserProvider | null
+    provider: ethers.BrowserProvider | ethers.JsonRpcProvider | null
   ) => {
     setWalletAddress(walletAddr);
     setEnsName(ens);
