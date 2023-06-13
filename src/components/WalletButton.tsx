@@ -1,10 +1,11 @@
+/* eslint-disable jsx-a11y/mouse-events-have-key-events */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 /* eslint-disable react/button-has-type */
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import { ethers } from 'ethers';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
 
@@ -12,6 +13,8 @@ const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL;
 
 const WalletButton = () => {
   const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
+  const [isConnected, setIsConnected] = useState(false); // New state to track connection status
+  const [isMousingOver, setIsMousingOver] = useState(false); // New state to track mouseover status
 
   const handleUpdate = (
     walletAddr: string,
@@ -21,10 +24,26 @@ const WalletButton = () => {
     updateVariables(walletAddr, ens, provider);
   };
 
+  useEffect(() => {
+    if (walletAddress !== '') {
+      setIsConnected(true);
+    }
+  }, [walletAddress]);
+
   const injected = injectedModule();
 
   const onboard = Onboard({
     wallets: [injected],
+    accountCenter: {
+      desktop: {
+        position: 'topRight',
+        enabled: false,
+      },
+      mobile: {
+        position: 'topRight',
+        enabled: false,
+      },
+    },
     chains: [
       {
         id: '0x1',
@@ -61,13 +80,20 @@ const WalletButton = () => {
     return '';
   };
 
+  const buttonTextFiller = () => {
+    if (isConnected && isMousingOver === true) {
+      return 'Disconnect';
+    }
+    if (ensName === '' && isMousingOver === false) {
+      return truncateString(walletAddress);
+    }
+    return ensName;
+  };
+
   const connectWallet = async () => {
     const wallets = await onboard.connectWallet();
     if (wallets[0]) {
       console.log(wallets[0]);
-      // create an ethers provider with the last connected wallet provider
-      // if using ethers v6 this is:
-      // ethersProvider = new ethers.BrowserProvider(wallet.provider, 'any')
       const localEthersProvider = new ethers.BrowserProvider(
         wallets[0].provider,
         'any'
@@ -76,20 +102,38 @@ const WalletButton = () => {
       const ens = await fetchEns(signer.address, localEthersProvider);
       handleUpdate(signer.address, ens, localEthersProvider);
       console.log(signer);
+      setIsMousingOver(false); // Reset mouseover status
+      setIsConnected(true); // Update connection status
     }
+  };
+
+  const handleDisconnect = async () => {
+    const [primaryWallet] = onboard.state.get().wallets;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    primaryWallet &&
+      (await onboard.disconnectWallet({ label: primaryWallet.label }));
+    handleUpdate('', '', null); // Clear the wallet variables
+    setIsConnected(false); // Update connection status
   };
 
   if (walletAddress !== '') {
     return (
-      <button className="rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white">
-        {ensName === '' ? truncateString(walletAddress) : ensName}
-      </button>
+      <div className="relative inline-block">
+        <button
+          className="wallet-button rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
+          onClick={() => handleDisconnect()}
+          onMouseEnter={() => setIsMousingOver(true)}
+          onMouseLeave={() => setIsMousingOver(false)}
+        >
+          {buttonTextFiller()}
+        </button>
+      </div>
     );
   }
 
   return (
     <button
-      className="rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
+      className="wallet-button rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
       onClick={() => connectWallet()}
     >
       Connect Wallet

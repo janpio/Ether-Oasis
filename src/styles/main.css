@@ -6,3 +6,7 @@
   min-height: 81px;
   min-width: 81px;
 }
+
+.wallet-button {
+  min-width: 165px;
+}
