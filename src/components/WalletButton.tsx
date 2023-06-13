@@ -129,7 +129,7 @@ const WalletButton = () => {
     return (
       <div className="relative inline-block">
         <button
-          className="wallet-button rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
+          className="wallet-button rounded border border-green-500 bg-transparent px-4 py-2 font-semibold text-green-400 hover:border-transparent hover:bg-green-500 hover:text-gray-100"
           onClick={() => handleDisconnect()}
           onMouseEnter={() => setIsMousingOver(true)}
           onMouseLeave={() => setIsMousingOver(false)}
@@ -142,7 +142,7 @@ const WalletButton = () => {
 
   return (
     <button
-      className="wallet-button rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
+      className="wallet-button rounded border border-green-500 bg-transparent px-4 py-2 font-semibold text-green-400 hover:border-transparent hover:bg-green-500 hover:text-gray-100"
       onClick={() => connectWallet()}
     >
       Connect Wallet

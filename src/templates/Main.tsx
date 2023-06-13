@@ -25,9 +25,7 @@ const Main = (props: IMainProps) => (
               />
             </Link>
             <div className="ml-4 flex flex-col items-start justify-center">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {AppConfig.title}
-              </h1>
+              <h1 className="text-3xl font-bold">{AppConfig.title}</h1>
               <h2 className="text-xl">{AppConfig.description}</h2>
             </div>
           </div>

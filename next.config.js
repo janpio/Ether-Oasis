@@ -15,8 +15,9 @@ module.exports = withBundleAnalyzer({
   // You can remove `basePath` if you don't need it.
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_MAINNET_RPC_URL: 'https://mainnet.infura.io/v3/[SECRET]',
+    NEXT_PUBLIC_MAINNET_RPC_URL:
+      'https://mainnet.infura.io/v3/[YOUR_INFURA_PROJECT_ID]',
     NEXT_PUBLIC_QUICKNODE_RPC_URL:
-      'https://distinguished-skilled-dew.discover.quiknode.pro/[SECRET]/',
+      'https://distinguished-skilled-dew.discover.quiknode.pro/[YOUR_QUICKNODE_PROJECT_ID]/',
   },
 });
