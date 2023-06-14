@@ -3,6 +3,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+require('dotenv').config();
+
 module.exports = withBundleAnalyzer({
   eslint: {
     dirs: ['.'],
@@ -15,9 +17,7 @@ module.exports = withBundleAnalyzer({
   // You can remove `basePath` if you don't need it.
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_MAINNET_RPC_URL:
-      'https://mainnet.infura.io/v3/[YOUR_INFURA_PROJECT_ID]',
-    NEXT_PUBLIC_QUICKNODE_RPC_URL:
-      'https://distinguished-skilled-dew.discover.quiknode.pro/[YOUR_QUICKNODE_PROJECT_ID]/',
+    NEXT_PUBLIC_MAINNET_RPC_URL: process.env.NEXT_PUBLIC_MAINNET_RPC_URL,
+    NEXT_PUBLIC_QUICKNODE_RPC_URL: process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL,
   },
 });

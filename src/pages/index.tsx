@@ -17,6 +17,8 @@ const Index = () => {
       setDisplayName(ensName);
     } else if (walletAddress && walletAddress !== '') {
       setDisplayName(walletAddress);
+    } else if (walletAddress === '') {
+      setDisplayName('');
     }
   }, [walletAddress, ensName]);
 

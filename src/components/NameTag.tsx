@@ -15,7 +15,7 @@ const NameTag = () => {
     } else if (walletAddress && walletAddress !== '') {
       setDisplayName(walletAddress);
     } else if (walletAddress === '') {
-      setDisplayName('No Wallet Connected');
+      setDisplayName('');
     }
   }, [walletAddress, ensName]);
 

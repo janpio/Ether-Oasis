@@ -14,7 +14,7 @@ const Main = (props: IMainProps) => (
     {props.meta}
 
     <div className="mx-auto flex max-w-screen-lg flex-col items-center justify-start">
-      <header className="w-full border-b border-gray-300">
+      <header className="w-full border-b border-blue-200">
         <div className="flex w-full items-center justify-between pb-8 pt-16">
           <div className="flex items-center justify-start">
             <Link href="/" className="no-underline hover:no-underline">
@@ -37,7 +37,7 @@ const Main = (props: IMainProps) => (
         {props.children}
       </main>
 
-      <footer className="border-t border-gray-300 py-8 text-center text-sm">
+      <footer className="border-t border-blue-200 py-8 text-center text-sm">
         © Copyright {new Date().getFullYear()}{' '}
         <Link href="/about" className="underline">
           {AppConfig.title}
