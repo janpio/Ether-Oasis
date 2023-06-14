@@ -57,7 +57,7 @@ const Index = () => {
           <div className="ml-2 flex w-1/2 flex-col items-start justify-start">
             <Card
               title="Activity"
-              content={<ActivitySummary />}
+              content={<ActivitySummary allActivity={false} />}
               centerContent={false}
             />
           </div>

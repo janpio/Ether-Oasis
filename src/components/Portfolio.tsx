@@ -1,3 +1,5 @@
+// TODO: integrate with CMC API to get token prices
+// TODO: somehow get token icons to display with ticker
 /* eslint-disable import/no-extraneous-dependencies */
 import { ethers } from 'ethers';
 import { useContext, useEffect, useState } from 'react';

@@ -20,18 +20,20 @@ const NameTag = () => {
   }, [walletAddress, ensName]);
 
   return (
-    <div className="flex flex-row items-start justify-start">
-      <div className="ml-5 flex-col">
+    <div className="mb-4 mt-2 flex flex-row items-start justify-start">
+      <div className="ml-5">
         {walletAddress && walletAddress !== '' && (
           <img
-            className="h-24 w-24 rounded-md"
+            className="h-16 w-16 rounded-md"
             src={makeBlockie(walletAddress)}
             alt="wallet blockie"
           />
         )}
-        <p className="mt-1 text-2xl">{displayName}</p>
+      </div>
+      <div className="ml-5">
+        <p className="-mt-1 text-2xl">{displayName}</p>
         {displayName !== walletAddress && (
-          <p className="mt-1 text-lg text-gray-600">
+          <p className="mt-1 text-base text-gray-600">
             {truncateString(walletAddress)}
           </p>
         )}

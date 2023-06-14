@@ -1,4 +1,6 @@
+// TODO: refactor to add pagination at bottom when allActivity is true, receive page from url params
 /* eslint-disable import/no-extraneous-dependencies */
+import Link from 'next/link';
 import { useContext, useMemo, useState } from 'react';
 
 import getActivity from '@/api/activity';
@@ -7,7 +9,11 @@ import { GlobalContext } from '@/context/GlobalContext';
 
 import ActivitySingle from './ActivitySingle';
 
-const ActivitySummary = () => {
+type Props = {
+  allActivity?: boolean;
+};
+
+const ActivitySummary = ({ allActivity }: Props) => {
   const { walletAddress } = useContext(GlobalContext);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
 
@@ -30,6 +36,13 @@ const ActivitySummary = () => {
               activityItem={activityItem}
             />
           ))}
+          {!allActivity && (
+            <div>
+              <Link href="/activity">
+                <p className="text-blue-300">View All</p>
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
