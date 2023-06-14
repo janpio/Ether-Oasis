@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 
 import Card from '@/components/Card';
+import NameTag from '@/components/NameTag';
 import Portfolio from '@/components/Portfolio';
 import WalletButton from '@/components/WalletButton';
 import { GlobalContext } from '@/context/GlobalContext';
@@ -21,12 +22,11 @@ const Index = () => {
 
   return (
     <Main meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}>
+      <NameTag />
       <div className="flex w-full flex-col items-start justify-start">
         <Card
           title={
-            displayName && displayName !== ''
-              ? displayName
-              : 'No Wallet Connected'
+            displayName && displayName !== '' ? 'Wallet' : 'No Wallet Connected'
           }
           content={
             walletAddress && walletAddress !== '' ? (
@@ -35,7 +35,7 @@ const Index = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center">
-                <p>Connect you wallet to continue.</p>
+                <p className="mb-4 mt-2">Connect you wallet to continue.</p>
                 <WalletButton />
               </div>
             )

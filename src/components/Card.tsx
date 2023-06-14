@@ -14,7 +14,7 @@ const Card: React.FC<CardProps> = ({ title, content, centerContent }) => {
           centerContent && 'flex flex-col items-center justify-center'
         }`}
       >
-        <div className="text-xl font-bold">{title}</div>
+        <div className="text-2xl font-bold">{title}</div>
         <div className="text-base text-gray-700">{content}</div>
       </div>
     </div>

@@ -32,15 +32,14 @@ const Portfolio = () => {
 
   return (
     <div className="mt-3 flex flex-col">
-      <h3 className="text-2xl font-bold">Wallet</h3>
       <table className="mt-2 table-fixed">
         <thead>
           <tr>
-            <th className="w-1/2 text-left">Token</th>
-            <th className="w-1/2 text-left">Balance</th>
+            <th className="w-1/2 text-left text-xl">Token</th>
+            <th className="w-1/2 text-left text-xl">Balance</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-lg">
           <tr>
             <td>ETH</td>
             <td>{ethBalance}</td>

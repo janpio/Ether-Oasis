@@ -8,6 +8,7 @@ import { ethers } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
+import { truncateString } from '@/utils/truncateString';
 
 const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL;
 
@@ -54,6 +55,13 @@ const WalletButton = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (walletAddress && walletAddress !== '') {
+      setIsConnected(true);
+      setIsMousingOver(false);
+    }
+  }, [walletAddress]);
+
   const injected = injectedModule();
 
   const onboard = Onboard({
@@ -77,15 +85,6 @@ const WalletButton = () => {
       },
     ],
   });
-
-  const truncateString = (str: string) => {
-    if (str.length <= 8) {
-      return str;
-    }
-    const firstFour = str.slice(0, 4);
-    const lastFour = str.slice(-4);
-    return `${firstFour}...${lastFour}`;
-  };
 
   const buttonTextFiller = () => {
     if (isConnected && isMousingOver === true) {
