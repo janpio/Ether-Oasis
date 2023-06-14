@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
+import ActivitySummary from '@/components/ActivitySummary';
 import Card from '@/components/Card';
 import NameTag from '@/components/NameTag';
 import Portfolio from '@/components/Portfolio';
@@ -25,25 +26,42 @@ const Index = () => {
   return (
     <Main meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}>
       <NameTag />
-      <div className="flex w-full flex-col items-start justify-start">
-        <Card
-          title={
-            displayName && displayName !== '' ? 'Wallet' : 'No Wallet Connected'
-          }
-          content={
-            walletAddress && walletAddress !== '' ? (
-              <div>
-                <Portfolio />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center">
-                <p className="mb-4 mt-2">Connect you wallet to continue.</p>
-                <WalletButton />
-              </div>
-            )
-          }
-          centerContent={!(walletAddress && walletAddress !== '')}
-        />
+      <div className="flex flex-row">
+        <div
+          className={`flex ${
+            walletAddress && walletAddress !== '' ? 'w-7/12' : 'w-full'
+          } mr-2 flex-col items-start justify-start`}
+        >
+          <Card
+            title={
+              displayName && displayName !== ''
+                ? 'Tokens'
+                : 'No Wallet Connected'
+            }
+            content={
+              walletAddress && walletAddress !== '' ? (
+                <div>
+                  <Portfolio />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center">
+                  <p className="mb-4 mt-2">Connect you wallet to continue.</p>
+                  <WalletButton />
+                </div>
+              )
+            }
+            centerContent={!(walletAddress && walletAddress !== '')}
+          />
+        </div>
+        {walletAddress && walletAddress !== '' && (
+          <div className="ml-2 flex w-5/12 flex-col items-start justify-start">
+            <Card
+              title="Activity"
+              content={<ActivitySummary />}
+              centerContent={false}
+            />
+          </div>
+        )}
       </div>
     </Main>
   );

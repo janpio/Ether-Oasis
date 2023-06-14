@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ethers } from 'ethers';
 
-import type { ApiResponse, Token } from './types/tokenTypes';
+import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
-const QUICKNODE_RPC_URL = process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL;
+import type { ApiResponse, Token } from './types/tokenTypes';
 
 const parseTokens = (tokens: Token[]): Token[] => {
   const parsedTokens = <Token[]>[];
@@ -17,7 +17,9 @@ const parseTokens = (tokens: Token[]): Token[] => {
     parsedToken.symbol =
       token.symbol.length > 6 ? token.symbol.slice(0, 6) : token.symbol;
     parsedToken.totalBalance = token.totalBalance;
-    parsedTokens.push(parsedToken);
+    if (Number(ethers.formatEther(token.totalBalance)) >= 0.01) {
+      parsedTokens.push(parsedToken);
+    }
   });
   return parsedTokens;
 };
@@ -25,12 +27,14 @@ const parseTokens = (tokens: Token[]): Token[] => {
 const getTokens = async (walletAddress: string): Promise<Token[]> => {
   const tokens = <Token[]>[];
 
-  const provider = new ethers.JsonRpcProvider(QUICKNODE_RPC_URL);
-  const heads: ApiResponse = await provider.send('qn_getWalletTokenBalance', [
-    {
-      wallet: walletAddress,
-    },
-  ]);
+  const heads: ApiResponse = await quickNodeProvider.send(
+    'qn_getWalletTokenBalance',
+    [
+      {
+        wallet: walletAddress,
+      },
+    ]
+  );
   tokens.push(...heads.result);
   return parseTokens(tokens);
 };

@@ -35,21 +35,27 @@ const Portfolio = () => {
       <table className="mt-2 table-fixed">
         <thead>
           <tr>
-            <th className="w-1/2 text-left text-xl">Token</th>
-            <th className="w-1/2 text-left text-xl">Balance</th>
+            <th className="w-1/4 text-left text-xl">Token</th>
+            <th className="w-1/4 text-left text-xl">Price</th>
+            <th className="w-1/4 text-left text-xl">Balance</th>
+            <th className="w-1/4 text-left text-xl">Value</th>
           </tr>
         </thead>
         <tbody className="text-lg">
           <tr>
             <td>ETH</td>
+            <td>$1,750</td>
             <td>{ethBalance}</td>
+            <td>${(Number(ethBalance) * 1750).toFixed(2)}</td>
           </tr>
           {tokensInWallet.map((token) => (
             <tr key={token.address}>
-              <td>{token.symbol}</td>
-              <td>
+              <td className="w-1/4 text-left">{token.symbol}</td>
+              <td className="w-1/4 text-left">$69.69</td>
+              <td className="w-1/4 text-left">
                 {Number(ethers.formatEther(token.totalBalance)).toFixed(5)}
               </td>
+              <td className="w-1/4 text-left">$1,420.69</td>
             </tr>
           ))}
         </tbody>
