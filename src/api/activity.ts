@@ -2,27 +2,23 @@ import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
 import type { ActivityItem, ApiResponse } from './types/activityTypes';
 
-const getActivity = async (walletAddress: string) => {
+const getActivity = async (walletAddress: string, pageNumber: number) => {
   const activityItems: ActivityItem[] = [];
-  let pageNumber = 1;
-  let totalPages = 1;
+  let localPageNumber = pageNumber;
 
-  while (pageNumber <= totalPages) {
-    // eslint-disable-next-line no-await-in-loop
-    const response: ApiResponse = await quickNodeProvider.send(
-      'qn_getTransactionsByAddress',
-      [
-        {
-          address: walletAddress,
-          page: pageNumber,
-        },
-      ]
-    );
+  const response: ApiResponse = await quickNodeProvider.send(
+    'qn_getTransactionsByAddress',
+    [
+      {
+        address: walletAddress,
+        page: localPageNumber,
+        perPage: 20,
+      },
+    ]
+  );
 
-    activityItems.push(...response.paginatedItems);
-    totalPages = response.totalPages;
-    pageNumber += 1;
-  }
+  activityItems.push(...response.paginatedItems);
+  localPageNumber += 1;
 
   return activityItems;
 };

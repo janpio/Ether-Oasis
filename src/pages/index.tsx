@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
-import ActivitySummary from '@/components/ActivitySummary';
+import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 import NameTag from '@/components/NameTag';
 import Portfolio from '@/components/Portfolio';
@@ -29,7 +29,7 @@ const Index = () => {
       <div className="flex flex-row">
         <div
           className={`flex ${
-            walletAddress && walletAddress !== '' ? 'w-7/12' : 'w-full'
+            walletAddress && walletAddress !== '' ? 'w-1/2' : 'w-full'
           } mr-2 flex-col items-start justify-start`}
         >
           <Card
@@ -54,7 +54,7 @@ const Index = () => {
           />
         </div>
         {walletAddress && walletAddress !== '' && (
-          <div className="ml-2 flex w-5/12 flex-col items-start justify-start">
+          <div className="ml-2 flex w-1/2 flex-col items-start justify-start">
             <Card
               title="Activity"
               content={<ActivitySummary />}
