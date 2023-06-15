@@ -15,3 +15,9 @@ export type ApiResponse = {
   totalItems: number;
   totalPages: number;
 };
+
+export type ActivityResponse = {
+  activityItems: ActivityItem[];
+  pageNumber: number;
+  totalPages: number;
+};

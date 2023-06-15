@@ -21,3 +21,9 @@ p, li, a, span, div, input, textarea, button, table, td, th, tr {
   font-family: 'Lato', sans-serif;
   color: #DAE7F8;
 }
+
+.next-or-prev {
+  padding-top: 5.75px;
+  padding-bottom: 5.75px;
+  margin-top: -0.25px;
+}
