@@ -1,12 +1,27 @@
+/* eslint-disable no-console */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import axios from 'axios';
 import { ethers } from 'ethers';
 
+import coinGeckoData from '@/utils/CoinGeckoList.json';
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
 import type { ApiResponse, Token } from './types/tokenTypes';
 
+const tokensData = coinGeckoData.tokens;
+
 const checkIfStartsWith0x = (str: string) => {
   return str.startsWith('0x');
+};
+
+const findIdBySymbol = (symbol: string) => {
+  const localToken = tokensData.find((token) => token.symbol === symbol);
+  return localToken ? localToken.id : '';
+};
+
+const findSymbolById = (id: string) => {
+  const localToken = tokensData.find((token) => token.id === id);
+  return localToken ? localToken.symbol : '';
 };
 
 const parseTokens = (tokens: Token[]): Token[] => {
@@ -31,7 +46,7 @@ const parseTokens = (tokens: Token[]): Token[] => {
   return parsedTokens;
 };
 
-const getTokens = async (walletAddress: string): Promise<Token[]> => {
+export const getTokens = async (walletAddress: string): Promise<Token[]> => {
   const tokens = <Token[]>[];
 
   const heads: ApiResponse = await quickNodeProvider.send(
@@ -46,4 +61,60 @@ const getTokens = async (walletAddress: string): Promise<Token[]> => {
   return parseTokens(tokens);
 };
 
-export default getTokens;
+export const getEthPrice = async () => {
+  try {
+    const response = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price',
+      {
+        params: {
+          ids: 'ethereum',
+          vs_currencies: 'usd',
+        },
+      }
+    );
+
+    const { data } = response;
+    return data.ethereum.usd;
+  } catch (error) {
+    console.error('Error fetching token prices:', error);
+    return 0;
+  }
+};
+
+export const getTokenPrices = async (tokensInWallet: Token[]) => {
+  const tokenIds = tokensInWallet.map((token) =>
+    findIdBySymbol(token.symbol.toLowerCase())
+  );
+
+  try {
+    const response = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price',
+      {
+        params: {
+          ids: tokenIds.join(),
+          vs_currencies: 'usd',
+        },
+      }
+    );
+
+    const { data } = response;
+
+    const updatedTokensWithPrices: { [tokenSymbol: string]: number } = {};
+
+    Object.keys(data).forEach((id) => {
+      if (Object.prototype.hasOwnProperty.call(data, id)) {
+        const price = data[id].usd;
+        updatedTokensWithPrices[findSymbolById(id)] = price;
+      }
+    });
+
+    if (Object.keys(updatedTokensWithPrices).length > 0) {
+      return updatedTokensWithPrices;
+    }
+
+    return {};
+  } catch (error) {
+    console.error('Error fetching token prices:', error);
+    return {};
+  }
+};

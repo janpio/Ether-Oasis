@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 // TODO: somehow get token icons to display with ticker
 /* eslint-disable import/no-extraneous-dependencies */
-import axios from 'axios';
 import { ethers } from 'ethers';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
-import getTokens from '@/api/tokens';
+import { getEthPrice, getTokenPrices, getTokens } from '@/api/tokens';
 import type { Token } from '@/api/types/tokenTypes';
 import { GlobalContext } from '@/context/GlobalContext';
-import coinGeckoData from '@/utils/CoinGeckoList.json';
 
 const Portfolio = () => {
   const { walletAddress, ethersProvider } = useContext(GlobalContext);
@@ -18,18 +16,6 @@ const Portfolio = () => {
   const [tokensWithPrices, setTokensWithPrices] = useState<{
     [tokenSymbol: string]: number;
   }>({});
-
-  const tokensData = coinGeckoData.tokens;
-
-  const findIdBySymbol = (symbol: string) => {
-    const localToken = tokensData.find((token) => token.symbol === symbol);
-    return localToken ? localToken.id : '';
-  };
-
-  const findSymbolById = (id: string) => {
-    const localToken = tokensData.find((token) => token.id === id);
-    return localToken ? localToken.symbol : '';
-  };
 
   useEffect(() => {
     if (walletAddress && ethersProvider) {
@@ -41,80 +27,30 @@ const Portfolio = () => {
     }
   }, [walletAddress, ethersProvider]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (walletAddress) {
-      (async () => {
-        const tokens = await getTokens(walletAddress);
+      const fetchedTokens = getTokens(walletAddress);
+      fetchedTokens.then((tokens) => {
         setTokensInWallet(tokens);
-      })();
+      });
     }
   }, [walletAddress]);
 
-  useEffect(() => {
-    const fetchEthPrice = async () => {
-      try {
-        const response = await axios.get(
-          'https://api.coingecko.com/api/v3/simple/price',
-          {
-            params: {
-              ids: 'ethereum',
-              vs_currencies: 'usd',
-            },
-          }
-        );
-
-        const { data } = response;
-        console.log(data);
-        setEthPrice(data.ethereum.usd);
-      } catch (error) {
-        console.error('Error fetching token prices:', error);
-      }
-    };
-
+  useMemo(() => {
     if (Number(ethBalance) > 0) {
-      fetchEthPrice();
+      const fetchedEthPrice = getEthPrice();
+      fetchedEthPrice.then((price) => {
+        setEthPrice(price);
+      });
     }
   }, [ethBalance]);
 
-  useEffect(() => {
-    const fetchTokenPrices = async () => {
-      const tokenIds = tokensInWallet.map((token) =>
-        findIdBySymbol(token.symbol.toLowerCase())
-      );
-
-      try {
-        const response = await axios.get(
-          'https://api.coingecko.com/api/v3/simple/price',
-          {
-            params: {
-              ids: tokenIds.join(),
-              vs_currencies: 'usd',
-            },
-          }
-        );
-
-        const { data } = response;
-
-        const updatedTokensWithPrices: { [tokenSymbol: string]: number } = {};
-
-        Object.keys(data).forEach((id) => {
-          if (Object.prototype.hasOwnProperty.call(data, id)) {
-            const price = data[id].usd;
-            updatedTokensWithPrices[findSymbolById(id)] = price;
-          }
-        });
-
-        console.log(updatedTokensWithPrices);
-        if (Object.keys(updatedTokensWithPrices).length > 0) {
-          setTokensWithPrices(updatedTokensWithPrices);
-        }
-      } catch (error) {
-        console.error('Error fetching token prices:', error);
-      }
-    };
-
+  useMemo(() => {
     if (tokensInWallet.length > 0) {
-      fetchTokenPrices();
+      const fetchedTokenPrices = getTokenPrices(tokensInWallet);
+      fetchedTokenPrices.then((prices) => {
+        setTokensWithPrices(prices);
+      });
     }
   }, [tokensInWallet]);
 
