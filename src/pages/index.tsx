@@ -34,9 +34,7 @@ const Index = () => {
         >
           <Card
             title={
-              displayName && displayName !== ''
-                ? 'Tokens'
-                : 'No Wallet Connected'
+              displayName && displayName !== '' ? '' : 'No Wallet Connected'
             }
             content={
               walletAddress && walletAddress !== '' ? (
