@@ -5,6 +5,10 @@ import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
 import type { ApiResponse, Token } from './types/tokenTypes';
 
+const checkIfStartsWith0x = (str: string) => {
+  return str.startsWith('0x');
+};
+
 const parseTokens = (tokens: Token[]): Token[] => {
   const parsedTokens = <Token[]>[];
   tokens.forEach((token) => {
@@ -17,7 +21,10 @@ const parseTokens = (tokens: Token[]): Token[] => {
     parsedToken.symbol =
       token.symbol.length > 6 ? token.symbol.slice(0, 6) : token.symbol;
     parsedToken.totalBalance = token.totalBalance;
-    if (Number(ethers.formatEther(token.totalBalance)) >= 0.01) {
+    if (
+      Number(ethers.formatEther(token.totalBalance)) >= 0.01 &&
+      !checkIfStartsWith0x(token.symbol)
+    ) {
       parsedTokens.push(parsedToken);
     }
   });
