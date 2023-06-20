@@ -38,25 +38,6 @@ npm run dev
 
 5. Open your browser and navigate to http://localhost:3000 to access Ether Oasis.
 
-```shell
-.
-├── README.md                       # README file
-├── __mocks__                       # Mocks for testing
-├── .github                         # GitHub folder
-├── .husky                          # Husky configuration
-├── .vscode                         # VSCode configuration
-├── public                          # Public assets folder
-├── src
-│   ├── layouts                     # Layouts components
-│   ├── pages                       # Next JS Pages
-│   ├── pages.test                  # Next JS Pages tests (this avoids tests to be treated as a Next.js pages)
-│   ├── styles                      # Styles folder
-│   ├── templates                   # Default template
-│   └── utils                       # Utility functions
-├── tailwind.config.js              # Tailwind CSS configuration
-└── tsconfig.json                   # TypeScript configuration
-```
-
 ### Commit Message Format
 
 The project enforces [Conventional Commits](https://www.conventionalcommits.org/) specification. This means that all your commit messages must be formatted according to the specification. To help you write commit messages, the project uses [Commitizen](https://github.com/commitizen/cz-cli), an interactive CLI that guides you through the commit process. To use it, run the following command:

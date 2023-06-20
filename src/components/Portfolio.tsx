@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import { ethers } from 'ethers';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
@@ -74,7 +75,7 @@ const Portfolio = () => {
         <div className="-mt-3 text-2xl font-bold">Portfolio</div>
         <div className="ml-2 text-2xl font-bold">${totalValue.toFixed(2)}</div>
       </div>
-      <table className="mt-2 table-fixed">
+      <table className="portfolio-table mt-2 table-fixed">
         <thead>
           <tr>
             <th className="w-2/12 text-left text-xl">Token</th>

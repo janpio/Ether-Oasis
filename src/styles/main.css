@@ -10,3 +10,13 @@
 .wallet-button {
   min-width: 165px;
 }
+
+.next-or-prev {
+  padding-top: 5.75px;
+  padding-bottom: 5.75px;
+  margin-top: -0.25px;
+}
+
+.portfolio-table tr{
+  height: 45px;
+}
