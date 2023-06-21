@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useContext, useEffect, useMemo, useState } from 'react';
 
-import getActivity from '@/api/activity';
+import { getActivity } from '@/api/activity';
 import type { ActivityItem, ActivityResponse } from '@/api/types/activityTypes';
 import { GlobalContext } from '@/context/GlobalContext';
 
