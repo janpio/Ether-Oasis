@@ -14,3 +14,10 @@ export type ApiResponse = {
   totalItems: number;
   totalPages: number;
 };
+
+export type TokenData = {
+  [tokenSymbol: string]: {
+    price: number;
+    logo: string;
+  };
+};

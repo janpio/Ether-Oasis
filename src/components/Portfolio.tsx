@@ -2,9 +2,16 @@
 import { ethers } from 'ethers';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
-import { getEthPrice, getTokenPrices, getTokens } from '@/api/tokens';
+import {
+  getEthPrice,
+  getTokenImage,
+  getTokenPrices,
+  getTokens,
+} from '@/api/tokens';
 import type { Token } from '@/api/types/tokenTypes';
 import { GlobalContext } from '@/context/GlobalContext';
+
+import PortfolioRow from './PortfolioRow';
 
 const Portfolio = () => {
   const { walletAddress, ethersProvider } = useContext(GlobalContext);
@@ -13,8 +20,9 @@ const Portfolio = () => {
   const [ethPrice, setEthPrice] = useState(0);
   const [tokensWithPrices, setTokensWithPrices] = useState<{
     [tokenSymbol: string]: number;
-  }>({});
+  }>({ '': 0 });
   const [totalValue, setTotalValue] = useState(0);
+  const [ethImage, setEthImage] = useState<string>('');
 
   useEffect(() => {
     if (walletAddress && ethersProvider) {
@@ -25,6 +33,15 @@ const Portfolio = () => {
       getBalance();
     }
   }, [walletAddress, ethersProvider]);
+
+  useMemo(() => {
+    if (walletAddress) {
+      const fetchedEthImage = getTokenImage('ETH');
+      fetchedEthImage.then((image) => {
+        setEthImage(image);
+      });
+    }
+  }, [walletAddress]);
 
   useMemo(() => {
     if (walletAddress) {
@@ -86,7 +103,14 @@ const Portfolio = () => {
         </thead>
         <tbody className="text-lg">
           <tr>
-            <td>ETH</td>
+            <td>
+              <img
+                className="mr-2 inline-block h-6 w-6 rounded-full"
+                src={ethImage}
+                alt="ETH"
+              />
+              ETH
+            </td>
             <td>${ethPrice.toFixed(2)}</td>
             <td>{ethBalance}</td>
             <td className="text-right">
@@ -94,33 +118,15 @@ const Portfolio = () => {
             </td>
           </tr>
           {tokensInWallet.map((token) => (
-            <tr key={token.address}>
-              <td className="w-2/12 text-left">{token.symbol}</td>
-              <td className="w-3/12 text-left">
-                $
-                {Number(tokensWithPrices[token.symbol.toLowerCase()]) < 0.001
-                  ? '<0.001'
-                  : Number(tokensWithPrices[token.symbol.toLowerCase()])
-                      .toFixed(3)
-                      .replace(/\.?0+$/, '')}
-              </td>
-              <td className="w-4/12 text-left">
-                {Number(ethers.formatEther(token.totalBalance)).toFixed(5)}
-              </td>
-              <td className="w-3/12 text-right">
-                $
-                {tokensWithPrices?.[token.symbol.toLowerCase()] !== undefined &&
-                  (() => {
-                    const tokenPrice =
-                      tokensWithPrices?.[token.symbol.toLowerCase()] ?? 0;
-                    const totalBalance = Number(
-                      ethers.formatEther(token.totalBalance)
-                    );
-                    const value = totalBalance * tokenPrice;
-                    return Number.isNaN(value) ? '-' : value.toFixed(2);
-                  })()}
-              </td>
-            </tr>
+            <PortfolioRow
+              key={token.symbol}
+              token={token}
+              tokenPrice={
+                tokensWithPrices[token.symbol.toLowerCase()]
+                  ? tokensWithPrices[token.symbol.toLowerCase()]
+                  : 0
+              }
+            />
           ))}
         </tbody>
       </table>
