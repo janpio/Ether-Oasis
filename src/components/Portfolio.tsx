@@ -102,10 +102,10 @@ const Portfolio = () => {
           </tr>
         </thead>
         <tbody className="text-lg">
-          <tr>
+          <tr className="border-b border-gray-700">
             <td>
               <img
-                className="mr-2 inline-block h-6 w-6 rounded-full"
+                className="-mt-1 mr-2 inline-block h-6 w-6 rounded-full"
                 src={ethImage}
                 alt="ETH"
               />

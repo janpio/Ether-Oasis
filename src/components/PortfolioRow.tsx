@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { getTokenImage } from '@/api/tokens';
 import type { Token } from '@/api/types/tokenTypes';
@@ -14,13 +14,13 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
   const [formattedValue, setFormattedValue] = useState('');
   const [tokenImage, setTokenImage] = useState<string>('');
 
-  useEffect(() => {
+  useMemo(() => {
     if (tokenPrice && token) {
       setTotalBalance(Number(ethers.formatEther(token.totalBalance)));
     }
   }, [tokenPrice, token]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (tokenPrice && totalBalance > 0) {
       const value = tokenPrice * totalBalance;
       const formatted = Number.isNaN(value) ? '-' : value.toFixed(2);
@@ -28,7 +28,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
     }
   }, [token, tokenPrice, totalBalance]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (token) {
       const fetchedTokenImage = getTokenImage(token.symbol);
       fetchedTokenImage.then((image) => {
@@ -38,10 +38,10 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
   }, [token]);
 
   return (
-    <tr key={token.symbol}>
+    <tr key={token.symbol} className="border-b border-gray-700">
       <td className="w-3/12 text-left">
         <img
-          className="mr-2 inline-block h-6 w-6 rounded-full"
+          className="-mt-1 mr-2 inline-block h-6 w-6 rounded-full"
           src={tokenImage}
           alt={token.symbol}
         />

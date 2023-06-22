@@ -3,8 +3,10 @@
 /* eslint-disable no-console */
 /* eslint-disable react/button-has-type */
 // TODO: Add support for WalletConnect, CoinbaseWallet and a few others supported by Onboard.js
+import coinbaseWalletModule from '@web3-onboard/coinbase';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
+import walletConnectModule from '@web3-onboard/walletconnect';
 import { ethers } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 
@@ -12,6 +14,42 @@ import { GlobalContext } from '@/context/GlobalContext';
 import { truncateString } from '@/utils/truncateString';
 
 const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL;
+
+type WalletConnectOptions = {
+  bridge?: string; // default = 'https://bridge.walletconnect.org'
+  qrcodeModalOptions?: {
+    mobileLinks: string[]; // set the order and list of mobile linking wallets
+  };
+  connectFirstChainId?: boolean; // if true, connects to the first network chain provided
+  /**
+   * Optional function to handle WalletConnect URI when it becomes available
+   */
+  handleUri?: (uri: string) => Promise<unknown>;
+} & (
+  | {
+      /**
+       * Defaults to version: 1 - this behavior will be deprecated after the WalletConnect v1 sunset
+       */
+      version?: 1;
+    }
+  | {
+      /**
+       * Project ID associated with [WalletConnect account](https://cloud.walletconnect.com)
+       */
+      projectId: string;
+      /**
+       * Defaults to version: 1 - this behavior will be deprecated after the WalletConnect v1 sunset
+       */
+      version: 2;
+      /**
+       * List of Required Chain(s) ID for wallets to support in number format (integer or hex)
+       * Defaults to [1] - Ethereum
+       * The chains defined within the web3-onboard config will define the
+       * optional chains for the WalletConnect module
+       */
+      requiredChains?: number[] | undefined;
+    }
+);
 
 const WalletButton = () => {
   const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
@@ -43,6 +81,32 @@ const WalletButton = () => {
     return '';
   };
 
+  const coinbaseWalletSdk = coinbaseWalletModule({ darkMode: true });
+
+  const wcV1InitOptions: WalletConnectOptions = {
+    qrcodeModalOptions: {
+      mobileLinks: ['metamask', 'argent', 'trust'],
+    },
+    connectFirstChainId: true,
+  };
+
+  // V2 options, disabled for now due to bug in WalletConnect v2, continue checking to see if it gets fixed
+  // const wcV2InitOptions: WalletConnectOptions = {
+  //   version: 2,
+  //   /**
+  //    * Project ID associated with [WalletConnect account](https://cloud.walletconnect.com)
+  //    */
+  //   projectId: 'abc123...',
+  //   /**
+  //    * Chains required to be supported by all wallets connecting to your DApp
+  //    */
+  //   requiredChains: [1],
+  // };
+
+  // const walletConnect = walletConnectModule(wcV2InitOptions || wcV1InitOptions);
+
+  const walletConnect = walletConnectModule(wcV1InitOptions);
+
   useEffect(() => {
     const storedWalletAddress = localStorage.getItem('walletAddress');
     if (storedWalletAddress) {
@@ -66,7 +130,7 @@ const WalletButton = () => {
   const injected = injectedModule();
 
   const onboard = Onboard({
-    wallets: [injected],
+    wallets: [injected, coinbaseWalletSdk, walletConnect],
     accountCenter: {
       desktop: {
         position: 'topRight',

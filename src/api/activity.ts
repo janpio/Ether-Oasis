@@ -134,3 +134,10 @@ export const getContractInteraction = async (transaction: Transaction) => {
   }
   return null;
 };
+
+export const getAssetTransfers = async (transaction: Transaction) => {
+  // use alchemy API to get token transfers
+  // https://docs.alchemy.com/reference/alchemy-getassettransfers
+  console.log('transaction', transaction);
+  return null;
+};

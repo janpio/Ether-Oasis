@@ -1,10 +1,8 @@
 .logo {
   height: 81px;
-  width: 81px;
+  width: auto;
   max-height: 81px;
-  max-width: 81px;
   min-height: 81px;
-  min-width: 81px;
 }
 
 .wallet-button {

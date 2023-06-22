@@ -19,7 +19,7 @@ const Main = (props: IMainProps) => (
           <div className="flex items-center justify-start">
             <Link href="/" className="no-underline hover:no-underline">
               <img
-                src="/assets/images/ether-oasis-full-icon.png"
+                src="/assets/images/ether-oasis-icon.png"
                 alt="Nextjs starter banner"
                 className="logo no-underline hover:no-underline"
               />
