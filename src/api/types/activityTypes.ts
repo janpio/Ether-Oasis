@@ -59,3 +59,49 @@ export type ABI = Array<{
   stateMutability?: string;
   type: string;
 }>;
+
+export type Transfer = {
+  blockNum: string;
+  uniqueId: string;
+  hash: string;
+  from: string;
+  to: string;
+  value: number | null;
+  erc721TokenId: string | null;
+  erc1155Metadata: string | null;
+  tokenId: string | null;
+  asset: string;
+  category: string;
+  rawContract: {
+    value: string;
+    address: string;
+    decimal: string;
+  };
+};
+
+export type TransferResponseObject = {
+  jsonrpc: string;
+  id: number;
+  result: {
+    transfers: Transfer[];
+  };
+};
+
+export const defaultTransfer: Transfer = {
+  blockNum: '',
+  uniqueId: '',
+  hash: '',
+  from: '',
+  to: '',
+  value: 0,
+  erc721TokenId: null,
+  erc1155Metadata: null,
+  tokenId: null,
+  asset: '',
+  category: '',
+  rawContract: {
+    value: '',
+    address: '',
+    decimal: '',
+  },
+};

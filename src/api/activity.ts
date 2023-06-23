@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 /* eslint-disable no-console */
 import axios from 'axios';
 import { ethers } from 'ethers';
@@ -10,9 +11,13 @@ import type {
   ApiResponse,
   Transaction,
   TransactionHashes,
+  Transfer,
+  TransferResponseObject,
 } from './types/activityTypes';
+import { defaultTransfer } from './types/activityTypes';
 
 const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
+const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 
 const checkIfContractAddress = async (address: string) => {
   const code = await quickNodeProvider.getCode(address);
@@ -135,9 +140,48 @@ export const getContractInteraction = async (transaction: Transaction) => {
   return null;
 };
 
-export const getAssetTransfers = async (transaction: Transaction) => {
-  // use alchemy API to get token transfers
-  // https://docs.alchemy.com/reference/alchemy-getassettransfers
-  console.log('transaction', transaction);
-  return null;
+export const getAssetTransfers = async (
+  transaction: ActivityItem
+): Promise<Transfer[]> => {
+  try {
+    const hexlifiedBlockNumber = `0x${(
+      Number(transaction.blockNumber) >>> 0
+    ).toString(16)}`;
+
+    const options = {
+      method: 'POST',
+      url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+      },
+      data: {
+        id: 1,
+        jsonrpc: '2.0',
+        method: 'alchemy_getAssetTransfers',
+        params: [
+          {
+            fromBlock: hexlifiedBlockNumber,
+            toBlock: hexlifiedBlockNumber,
+            toAddress: transaction.fromAddress,
+            category: ['erc20'],
+          },
+        ],
+      },
+    };
+
+    const response = await axios.request(options);
+    const responseObject: TransferResponseObject = response.data;
+
+    if (responseObject.result.transfers.length > 0) {
+      console.log(responseObject.result.transfers);
+      return responseObject.result.transfers.length > 0
+        ? responseObject.result.transfers
+        : [defaultTransfer];
+    }
+    return [defaultTransfer];
+  } catch (error) {
+    console.error(error);
+    return [defaultTransfer];
+  }
 };

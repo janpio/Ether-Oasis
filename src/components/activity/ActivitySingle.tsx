@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import makeBlockie from 'ethereum-blockies-base64';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { format } from 'timeago.js';
 
-// import {
-//   fetchTransactionDetails,
-//   getContractInteraction,
-// } from '@/api/activity';
-import type { ActivityItem } from '@/api/types/activityTypes';
+import { getAssetTransfers } from '@/api/activity';
+import type { ActivityItem, Transfer } from '@/api/types/activityTypes';
+import { defaultTransfer } from '@/api/types/activityTypes';
 import { GlobalContext } from '@/context/GlobalContext';
 
 type Props = {
@@ -17,30 +15,16 @@ type Props = {
 
 const ActivitySingle = ({ activityItem }: Props) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
-  // const [transactionDetails, setTransactionDetails] = useState<any>([]);
-  // const [contractInteraction, setContractInteraction] = useState<any>({});
+  const [assetTransfers, setAssetTransfers] = useState<Transfer[]>([]);
 
-  // useMemo(() => {
-  //   (async () => {
-  //     const details = await fetchTransactionDetails([
-  //       activityItem.transactionHash,
-  //     ]);
-  //     if (details && details.length > 0) {
-  //       setTransactionDetails(details[0]);
-  //     }
-  //   })();
-  // }, [activityItem]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const fetchedAssetTransfers = await getAssetTransfers(activityItem);
+      setAssetTransfers([...fetchedAssetTransfers]);
+    };
 
-  // useEffect(() => {
-  //   console.log(transactionDetails);
-  //   if (transactionDetails && transactionDetails.to) {
-  //     (async () => {
-  //       const interaction = await getContractInteraction(transactionDetails);
-  //       console.log('interaction ', interaction);
-  //       // setContractInteraction(interaction);
-  //     })();
-  //   }
-  // }, [transactionDetails]);
+    fetchData();
+  }, [activityItem]);
 
   return (
     <div className="mt-4 flex flex-col rounded border border-blue-300 p-3">
@@ -60,6 +44,26 @@ const ActivitySingle = ({ activityItem }: Props) => {
         </div>
       </div>
       <p className="mt-2">did something with: {activityItem.toAddress}</p>
+      {assetTransfers && assetTransfers[0] !== defaultTransfer && (
+        <div className="flex flex-row items-start justify-start">
+          {assetTransfers.map((transfer) => (
+            <div
+              key={transfer.uniqueId}
+              className="mr-2 mt-2 flex flex-row items-start justify-start"
+            >
+              <p className="rounded border border-gray-600 px-2 py-1">
+                {transfer.asset}: {transfer.value?.toFixed(2)}{' '}
+                <span>
+                  {transfer.to.toLocaleLowerCase() ===
+                  walletAddress?.toLocaleLowerCase()
+                    ? 'IN'
+                    : 'OUT'}
+                </span>
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
