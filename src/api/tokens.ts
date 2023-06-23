@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import axios from 'axios';
 import { ethers } from 'ethers';
 
 import coinGeckoData from '@/utils/CoinGeckoList.json';
@@ -63,17 +62,20 @@ export const getTokens = async (walletAddress: string): Promise<Token[]> => {
 
 export const getEthPrice = async () => {
   try {
-    const response = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price',
-      {
-        params: {
-          ids: 'ethereum',
-          vs_currencies: 'usd',
-        },
-      }
+    const params = new URLSearchParams({
+      ids: 'ethereum',
+      vs_currencies: 'usd',
+    }).toString();
+
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?${params}`
     );
 
-    const { data } = response;
+    if (!response.ok) {
+      throw new Error('Failed to fetch token prices');
+    }
+
+    const data = await response.json();
     return data.ethereum.usd;
   } catch (error) {
     console.error('Error fetching token prices:', error);
@@ -81,25 +83,26 @@ export const getEthPrice = async () => {
   }
 };
 
-/* 
-  TODO:
-  convert getTokenPrices to 'getTokensInfo' have it call 'getTokenImage' for each token
-  update the return so that updatedTokensWithPrices is a nested object where the token's symbol maps to it's price and logo
-*/
-
 export const getTokenImage = async (tokenSymbol: string): Promise<string> => {
   const tokenId = findIdBySymbol(tokenSymbol.toLowerCase());
   try {
-    const response = await axios.get(
+    const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/${tokenId}`
     );
 
-    const { data } = response;
-    return data.image.small;
+    if (response.ok) {
+      const data = await response.json();
+      return data.image.small;
+    }
+    if (!response.ok) {
+      console.error('Error fetching token image:', response.status);
+      return '';
+    }
   } catch (error) {
     console.error('Error fetching token image:', error);
     return '';
   }
+  return '';
 };
 
 export const getTokenPrices = async (tokensInWallet: Token[]) => {
@@ -108,17 +111,20 @@ export const getTokenPrices = async (tokensInWallet: Token[]) => {
   );
 
   try {
-    const response = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price',
-      {
-        params: {
-          ids: tokenIds.join(),
-          vs_currencies: 'usd',
-        },
-      }
+    const params = new URLSearchParams({
+      ids: tokenIds.join(),
+      vs_currencies: 'usd',
+    }).toString();
+
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?${params}`
     );
 
-    const { data } = response;
+    if (!response.ok) {
+      throw new Error('Failed to fetch token prices');
+    }
+
+    const data = await response.json();
 
     const updatedTokensWithPrices: { [tokenSymbol: string]: number } = {};
 
