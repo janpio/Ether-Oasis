@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { GetServerSideProps, NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
@@ -152,6 +153,24 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
     const ethPrice = await getEthPrice();
     const ethImage = await getTokenImage('ETH');
 
+    if (fetchedTokens.length > 0) {
+      // iterate over fetchedTokens and call getTokenImage for each token.symbol
+      // update each Token in the Token[] to set the token.image based on the result of getTokenImage
+      // return the updated Token[]
+      const updatedTokens = fetchedTokens.map(async (token) => {
+        const image = await getTokenImage(token.symbol);
+        return { ...token, image };
+      });
+      const updatedTokensWithImages = await Promise.all(updatedTokens);
+      return {
+        props: {
+          fetchedTokens: updatedTokensWithImages,
+          tokensWithPrices,
+          ethPrice,
+          ethImage,
+        },
+      };
+    }
     return {
       props: {
         fetchedTokens,

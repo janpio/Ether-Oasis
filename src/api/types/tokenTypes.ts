@@ -6,6 +6,7 @@ export type Token = {
   quantityOut: string;
   symbol: string;
   totalBalance: string;
+  image?: string;
 };
 
 export type ApiResponse = {
