@@ -1,36 +1,28 @@
 // TODO: refactor to add pagination at bottom when allActivity is true, receive page from url params
 /* eslint-disable import/no-extraneous-dependencies */
 import Link from 'next/link';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { getActivity } from '@/api/activity';
 import type { ActivityItem, ActivityResponse } from '@/api/types/activityTypes';
-import { GlobalContext } from '@/context/GlobalContext';
 
 import ActivitySingle from './ActivitySingle';
 
 type Props = {
   allActivity?: boolean;
   pageNumber?: number;
+  activity?: ActivityResponse;
 };
 
-const ActivitySummary = ({ allActivity, pageNumber }: Props) => {
-  const { walletAddress } = useContext(GlobalContext);
+const ActivitySummary = ({ activity, allActivity, pageNumber }: Props) => {
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
 
   useMemo(() => {
-    if (walletAddress) {
-      (async () => {
-        const activity: ActivityResponse = await getActivity(
-          walletAddress,
-          pageNumber || 1
-        );
-        setActivityItems(activity.activityItems);
-        setTotalPages(activity.totalPages);
-      })();
+    if (activity) {
+      setActivityItems(activity.activityItems);
+      setTotalPages(activity.totalPages);
     }
-  }, [walletAddress, pageNumber]);
+  }, [pageNumber]);
 
   useEffect(() => {
     if (!allActivity && activityItems.length > 12) {

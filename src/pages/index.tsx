@@ -2,12 +2,14 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
+import { getActivity } from '@/api/activity';
 import {
   getEthPrice,
   getTokenImage,
   getTokenPrices,
   getTokens,
 } from '@/api/tokens';
+import type { ActivityResponse } from '@/api/types/activityTypes';
 import type { Token } from '@/api/types/tokenTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
@@ -23,6 +25,7 @@ interface IndexProps {
   tokensWithPrices: { [tokenSymbol: string]: number };
   ethPrice: number;
   ethImage: string;
+  activity: ActivityResponse;
 }
 
 const Index: NextPage<IndexProps> = ({
@@ -30,6 +33,7 @@ const Index: NextPage<IndexProps> = ({
   tokensWithPrices,
   ethPrice,
   ethImage,
+  activity,
 }) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
@@ -114,7 +118,9 @@ const Index: NextPage<IndexProps> = ({
         <div className="ml-2 flex w-1/2 flex-col items-start justify-start">
           <Card
             title="Activity"
-            content={<ActivitySummary allActivity={false} />}
+            content={
+              <ActivitySummary allActivity={false} activity={activity} />
+            }
             centerContent={false}
           />
         </div>
@@ -143,6 +149,11 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
         tokensWithPrices: {},
         ethPrice: 0,
         ethImage: '',
+        activity: {
+          activityItems: [],
+          totalPages: 1,
+          pageNumber: 1,
+        },
       },
     };
   }
@@ -152,6 +163,10 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
     const tokensWithPrices = await getTokenPrices(fetchedTokens);
     const ethPrice = await getEthPrice();
     const ethImage = await getTokenImage('ETH');
+    const activity: ActivityResponse = await getActivity(
+      storedWalletAddress,
+      1
+    );
 
     if (fetchedTokens.length > 0) {
       // iterate over fetchedTokens and call getTokenImage for each token.symbol
@@ -168,6 +183,7 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
           tokensWithPrices,
           ethPrice,
           ethImage,
+          activity,
         },
       };
     }
@@ -177,6 +193,7 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
         tokensWithPrices,
         ethPrice,
         ethImage,
+        activity,
       },
     };
   } catch (error) {
@@ -188,6 +205,11 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
         tokensWithPrices: {},
         ethPrice: 0,
         ethImage: '',
+        activity: {
+          activityItems: [],
+          totalPages: 1,
+          pageNumber: 1,
+        },
       },
     };
   }
