@@ -178,7 +178,6 @@ export const getAssetTransfers = async (
     const responseObject: TransferResponseObject = await response.json();
 
     if (responseObject.result.transfers.length > 0) {
-      console.log(responseObject.result.transfers);
       return responseObject.result.transfers;
     }
 

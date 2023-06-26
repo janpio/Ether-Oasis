@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 /* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-console */
 /* eslint-disable react/button-has-type */
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import Onboard from '@web3-onboard/core';
@@ -164,7 +163,6 @@ const WalletButton = () => {
   const connectWallet = async () => {
     const wallets = await onboard.connectWallet();
     if (wallets[0]) {
-      console.log(wallets[0]);
       const localEthersProvider = new ethers.BrowserProvider(
         wallets[0].provider,
         'any'
@@ -172,7 +170,6 @@ const WalletButton = () => {
       const signer = await localEthersProvider.getSigner();
       const ens = await fetchEns(signer.address, localEthersProvider);
       handleUpdate(signer.address, ens, localEthersProvider);
-      console.log(signer);
       setIsMousingOver(false);
       setIsConnected(true);
       Cookies.set('walletAddress', signer.address); // Store the wallet address

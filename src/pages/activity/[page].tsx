@@ -1,8 +1,9 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 
-import { getActivity } from '@/api/activity';
+import { getActivity, getAssetTransfers } from '@/api/activity';
 import type { ActivityResponse } from '@/api/types/activityTypes';
+import { defaultTransfer } from '@/api/types/activityTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 import { Meta } from '@/layouts/Meta';
@@ -46,13 +47,25 @@ export const getServerSideProps: GetServerSideProps<ActivityProps> = async ({
 }) => {
   const storedWalletAddress = req.cookies.walletAddress as string;
   const { page } = query;
-  const pageNumber = Number(page) || 1; // Convert the page number to a number (default to 1 if not provided or invalid)
+  const pageNumber = Number(page) || 1;
 
   const activity = await getActivity(storedWalletAddress, pageNumber);
+  const { activityItems } = activity;
+
+  // Fetch asset transfers for each activity item asynchronously using Promise.all
+  const activityItemsWithAssetTransfers = await Promise.all(
+    activityItems.map(async (activityItem) => {
+      const assetTransfers = await getAssetTransfers(activityItem);
+      if (assetTransfers[0] !== defaultTransfer) {
+        return { ...activityItem, assetTransfers };
+      }
+      return activityItem;
+    })
+  );
 
   return {
     props: {
-      activity,
+      activity: { ...activity, activityItems: activityItemsWithAssetTransfers },
     },
   };
 };

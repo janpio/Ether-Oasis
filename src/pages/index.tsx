@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 import type { GetServerSideProps, NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
-import { getActivity } from '@/api/activity';
+import { getActivity, getAssetTransfers } from '@/api/activity';
 import {
   getEthPrice,
   getTokenImage,
@@ -10,6 +11,7 @@ import {
   getTokens,
 } from '@/api/tokens';
 import type { ActivityResponse } from '@/api/types/activityTypes';
+import { defaultTransfer } from '@/api/types/activityTypes';
 import type { Token } from '@/api/types/tokenTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
@@ -28,15 +30,18 @@ interface IndexProps {
   activity: ActivityResponse;
 }
 
-const Index: NextPage<IndexProps> = ({
-  fetchedTokens,
-  tokensWithPrices,
-  ethPrice,
-  ethImage,
-  activity,
-}) => {
+const Index: NextPage<IndexProps> = (initialProps) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
+  const [fetchedTokens, setFetchedTokens] = useState(
+    initialProps.fetchedTokens
+  );
+  const [tokensWithPrices, setTokensWithPrices] = useState(
+    initialProps.tokensWithPrices
+  );
+  const [ethPrice, setEthPrice] = useState(initialProps.ethPrice);
+  const [ethImage, setEthImage] = useState(initialProps.ethImage);
+  const [activity, setActivity] = useState(initialProps.activity);
 
   useEffect(() => {
     if (ensName && ensName !== '') {
@@ -47,6 +52,60 @@ const Index: NextPage<IndexProps> = ({
       setDisplayName('');
     }
   }, [walletAddress, ensName]);
+
+  const reFetchPageData = async (address: string) => {
+    console.log('refetching page data');
+    let localFetchedTokens = await getTokens(address);
+
+    if (localFetchedTokens.length > 0) {
+      const updatedTokens = localFetchedTokens.map(async (token) => {
+        const image = await getTokenImage(token.symbol);
+        return { ...token, image };
+      });
+      const updatedTokensWithImages = await Promise.all(updatedTokens);
+      localFetchedTokens = updatedTokensWithImages;
+    }
+
+    const [localTokensWithPrices, localEthPrice, localEthImage, localActivity] =
+      await Promise.all([
+        getTokenPrices(localFetchedTokens),
+        getEthPrice(),
+        getTokenImage('ETH'),
+        getActivity(address, 1),
+      ]);
+
+    const { activityItems } = localActivity;
+
+    // Fetch asset transfers for each activity item asynchronously using Promise.all
+    const activityItemsWithAssetTransfers = await Promise.all(
+      activityItems.map(async (activityItem) => {
+        const assetTransfers = await getAssetTransfers(activityItem);
+        if (assetTransfers[0] !== defaultTransfer) {
+          return { ...activityItem, assetTransfers };
+        }
+        return activityItem;
+      })
+    );
+    setFetchedTokens(localFetchedTokens);
+    setTokensWithPrices(localTokensWithPrices);
+    setEthPrice(localEthPrice);
+    setEthImage(localEthImage);
+    setActivity({
+      ...activity,
+      activityItems: activityItemsWithAssetTransfers,
+    });
+  };
+
+  // if the wallet address changes, re-fetch the page data, do not fetch on initial load
+  useEffect(() => {
+    if (
+      walletAddress &&
+      walletAddress !== '' &&
+      initialProps.fetchedTokens.length === 0
+    ) {
+      reFetchPageData(walletAddress);
+    }
+  }, [walletAddress]);
 
   if (!walletAddress || walletAddress === '') {
     return (
@@ -62,29 +121,6 @@ const Index: NextPage<IndexProps> = ({
                 <div className="flex flex-col items-center justify-center">
                   <p className="mb-4 mt-2">Connect your wallet to continue.</p>
                   <WalletButton />
-                </div>
-              }
-              centerContent
-            />
-          </div>
-        </div>
-      </Main>
-    );
-  }
-
-  if (!fetchedTokens) {
-    return (
-      <Main
-        meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}
-      >
-        <NameTag />
-        <div className="flex flex-row">
-          <div className="mr-2 flex w-full flex-col items-start justify-start">
-            <Card
-              title="No Tokens Fetched from Server :("
-              content={
-                <div className="flex flex-col items-center justify-center">
-                  <p className="mb-4 mt-2">Be Patient.</p>
                 </div>
               }
               centerContent
@@ -122,6 +158,7 @@ const Index: NextPage<IndexProps> = ({
               <ActivitySummary allActivity={false} activity={activity} />
             }
             centerContent={false}
+            key={activity.activityItems.length}
           />
         </div>
       </div>
@@ -136,7 +173,7 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
 
   const fetchTokens = async (address: string): Promise<Token[]> => {
     if (address && address !== '') {
-      const tokens = await getTokens(address); // Await the promise returned by getTokens
+      const tokens = await getTokens(address);
       return tokens;
     }
     return [];
@@ -168,37 +205,54 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
       1
     );
 
+    const { activityItems } = activity;
+
+    // Fetch asset transfers for each activity item asynchronously using Promise.all
+    const activityItemsWithAssetTransfers = await Promise.all(
+      activityItems.map(async (activityItem) => {
+        const assetTransfers = await getAssetTransfers(activityItem);
+        if (assetTransfers[0] !== defaultTransfer) {
+          return { ...activityItem, assetTransfers };
+        }
+        return activityItem;
+      })
+    );
+
     if (fetchedTokens.length > 0) {
-      // iterate over fetchedTokens and call getTokenImage for each token.symbol
-      // update each Token in the Token[] to set the token.image based on the result of getTokenImage
-      // return the updated Token[]
       const updatedTokens = fetchedTokens.map(async (token) => {
         const image = await getTokenImage(token.symbol);
         return { ...token, image };
       });
       const updatedTokensWithImages = await Promise.all(updatedTokens);
+
       return {
         props: {
           fetchedTokens: updatedTokensWithImages,
           tokensWithPrices,
           ethPrice,
           ethImage,
-          activity,
+          activity: {
+            ...activity,
+            activityItems: activityItemsWithAssetTransfers,
+          },
         },
       };
     }
+
     return {
       props: {
         fetchedTokens,
         tokensWithPrices,
         ethPrice,
         ethImage,
-        activity,
+        activity: {
+          ...activity,
+          activityItems: activityItemsWithAssetTransfers,
+        },
       },
     };
   } catch (error) {
     console.error('Error fetching tokens:', error);
-
     return {
       props: {
         fetchedTokens: [],
@@ -214,4 +268,5 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
     };
   }
 };
+
 export default Index;
