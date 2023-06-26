@@ -2,27 +2,27 @@
 import { ethers } from 'ethers';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
-import {
-  getEthPrice,
-  getTokenImage,
-  getTokenPrices,
-  getTokens,
-} from '@/api/tokens';
 import type { Token } from '@/api/types/tokenTypes';
 import { GlobalContext } from '@/context/GlobalContext';
 
 import PortfolioRow from './PortfolioRow';
 
-const Portfolio = () => {
+type PortfolioProps = {
+  tokensInWallet: Token[];
+  tokensWithPrices: { [tokenSymbol: string]: number };
+  ethPrice: number;
+  ethImage: string;
+};
+
+const Portfolio = ({
+  tokensInWallet,
+  tokensWithPrices,
+  ethPrice,
+  ethImage,
+}: PortfolioProps) => {
   const { walletAddress, ethersProvider } = useContext(GlobalContext);
   const [ethBalance, setEthBalance] = useState('0');
-  const [tokensInWallet, setTokensInWallet] = useState<Token[]>([]);
-  const [ethPrice, setEthPrice] = useState(0);
-  const [tokensWithPrices, setTokensWithPrices] = useState<{
-    [tokenSymbol: string]: number;
-  }>({ '': 0 });
   const [totalValue, setTotalValue] = useState(0);
-  const [ethImage, setEthImage] = useState<string>('');
 
   useEffect(() => {
     if (walletAddress && ethersProvider) {
@@ -33,42 +33,6 @@ const Portfolio = () => {
       getBalance();
     }
   }, [walletAddress, ethersProvider]);
-
-  useMemo(() => {
-    if (walletAddress) {
-      const fetchedEthImage = getTokenImage('ETH');
-      fetchedEthImage.then((image) => {
-        setEthImage(image);
-      });
-    }
-  }, [walletAddress]);
-
-  useMemo(() => {
-    if (walletAddress) {
-      const fetchedTokens = getTokens(walletAddress);
-      fetchedTokens.then((tokens) => {
-        setTokensInWallet(tokens);
-      });
-    }
-  }, [walletAddress]);
-
-  useMemo(() => {
-    if (Number(ethBalance) > 0) {
-      const fetchedEthPrice = getEthPrice();
-      fetchedEthPrice.then((price) => {
-        setEthPrice(price);
-      });
-    }
-  }, [ethBalance]);
-
-  useMemo(() => {
-    if (tokensInWallet.length > 0) {
-      const fetchedTokenPrices = getTokenPrices(tokensInWallet);
-      fetchedTokenPrices.then((prices) => {
-        setTokensWithPrices(prices);
-      });
-    }
-  }, [tokensInWallet]);
 
   useMemo(() => {
     const calculateTotalValue = () => {

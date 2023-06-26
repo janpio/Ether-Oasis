@@ -7,6 +7,7 @@ import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import walletConnectModule from '@web3-onboard/walletconnect';
 import { ethers } from 'ethers';
+import Cookies from 'js-cookie';
 import { useContext, useEffect, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
@@ -107,7 +108,7 @@ const WalletButton = () => {
   const walletConnect = walletConnectModule(wcV1InitOptions);
 
   useEffect(() => {
-    const storedWalletAddress = localStorage.getItem('walletAddress');
+    const storedWalletAddress = Cookies.get('walletAddress');
     if (storedWalletAddress) {
       setIsConnected(true);
       const loadProviderAndENS = async () => {
@@ -174,7 +175,7 @@ const WalletButton = () => {
       console.log(signer);
       setIsMousingOver(false);
       setIsConnected(true);
-      localStorage.setItem('walletAddress', signer.address); // Store the wallet address
+      Cookies.set('walletAddress', signer.address); // Store the wallet address
     }
   };
 
@@ -185,7 +186,7 @@ const WalletButton = () => {
     }
     handleUpdate('', '', null);
     setIsConnected(false);
-    localStorage.removeItem('walletAddress'); // Remove the stored wallet address
+    Cookies.remove('walletAddress'); // Remove the stored wallet address
   };
 
   if (walletAddress !== '') {
