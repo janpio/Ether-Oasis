@@ -1,6 +1,5 @@
 /* eslint-disable no-bitwise */
 /* eslint-disable no-console */
-import axios from 'axios';
 import { ethers } from 'ethers';
 
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
@@ -88,12 +87,15 @@ export const fetchTransactionDetails = async (
 export const fetchContractABI = async (contractAddress: string) => {
   try {
     const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
-    const response = await axios.get(url);
+    const response = await fetch(url);
 
-    if (response.data.status === '1') {
-      const { result } = response.data;
-      const abi = JSON.parse(result);
-      return abi;
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === '1') {
+        const { result } = data;
+        const abi = JSON.parse(result);
+        return abi;
+      }
     }
 
     throw new Error('Failed to fetch ABI.');
@@ -148,14 +150,13 @@ export const getAssetTransfers = async (
       Number(transaction.blockNumber) >>> 0
     ).toString(16)}`;
 
-    const options = {
+    const requestOptions = {
       method: 'POST',
-      url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
       },
-      data: {
+      body: JSON.stringify({
         id: 1,
         jsonrpc: '2.0',
         method: 'alchemy_getAssetTransfers',
@@ -167,18 +168,20 @@ export const getAssetTransfers = async (
             category: ['erc20'],
           },
         ],
-      },
+      }),
     };
 
-    const response = await axios.request(options);
-    const responseObject: TransferResponseObject = response.data;
+    const response = await fetch(
+      `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+      requestOptions
+    );
+    const responseObject: TransferResponseObject = await response.json();
 
     if (responseObject.result.transfers.length > 0) {
       console.log(responseObject.result.transfers);
-      return responseObject.result.transfers.length > 0
-        ? responseObject.result.transfers
-        : [defaultTransfer];
+      return responseObject.result.transfers;
     }
+
     return [defaultTransfer];
   } catch (error) {
     console.error(error);
