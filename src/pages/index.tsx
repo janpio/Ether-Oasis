@@ -22,15 +22,7 @@ import { GlobalContext } from '@/context/GlobalContext';
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
 
-interface IndexProps {
-  fetchedTokens: Token[];
-  tokensWithPrices: { [tokenSymbol: string]: number };
-  ethPrice: number;
-  ethImage: string;
-  activity: ActivityResponse;
-}
-
-const Index: NextPage<IndexProps> = () => {
+const Index: NextPage = () => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
   const [fetchedTokens, setFetchedTokens] = useState<Token[]>([]);
