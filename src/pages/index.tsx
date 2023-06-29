@@ -168,9 +168,11 @@ const Index: NextPage<IndexProps> = (initialProps) => {
 
 export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
   req,
+  res,
 }) => {
   const storedWalletAddress = req.cookies.walletAddress as string;
   console.log('req', req.cookies);
+  console.log('res', res);
   console.log('getServerSideProps: storedWalletAddress:', storedWalletAddress);
 
   const fetchTokens = async (address: string): Promise<Token[]> => {
