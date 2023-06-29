@@ -177,13 +177,17 @@ export const getAssetTransfers = async (
     );
     const responseObject: TransferResponseObject = await response.json();
 
-    if (responseObject.result.transfers.length > 0) {
+    if (
+      responseObject.result &&
+      responseObject.result.transfers &&
+      responseObject.result.transfers.length > 0
+    ) {
       return responseObject.result.transfers;
     }
 
     return [defaultTransfer];
   } catch (error) {
-    console.error(error);
+    console.error('caught error ', error);
     return [defaultTransfer];
   }
 };

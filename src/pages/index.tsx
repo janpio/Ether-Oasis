@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+import Cookies from 'js-cookie';
 import type { GetServerSideProps, NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
@@ -42,6 +43,14 @@ const Index: NextPage<IndexProps> = (initialProps) => {
   const [ethPrice, setEthPrice] = useState(initialProps.ethPrice);
   const [ethImage, setEthImage] = useState(initialProps.ethImage);
   const [activity, setActivity] = useState(initialProps.activity);
+  const [cookieWalletAddress, setCookieWalletAddress] = useState('');
+
+  useEffect(() => {
+    const storedWalletAddress = Cookies.get('walletAddress');
+    if (storedWalletAddress && storedWalletAddress !== '') {
+      setCookieWalletAddress(storedWalletAddress);
+    }
+  }, []);
 
   useEffect(() => {
     if (ensName && ensName !== '') {
@@ -107,7 +116,10 @@ const Index: NextPage<IndexProps> = (initialProps) => {
     }
   }, [walletAddress]);
 
-  if (!walletAddress || walletAddress === '') {
+  if (
+    (!cookieWalletAddress || cookieWalletAddress === '') &&
+    (!walletAddress || walletAddress === '')
+  ) {
     return (
       <Main
         meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}
@@ -170,6 +182,7 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
   req,
 }) => {
   const storedWalletAddress = req.cookies.walletAddress as string;
+  console.log('getServerSideProps: storedWalletAddress:', storedWalletAddress);
 
   const fetchTokens = async (address: string): Promise<Token[]> => {
     if (address && address !== '') {
