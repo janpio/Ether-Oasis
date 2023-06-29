@@ -2,6 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
 
 import type { ActivityItem, ActivityResponse } from '@/api/types/activityTypes';
 
@@ -11,9 +12,15 @@ type Props = {
   allActivity?: boolean;
   pageNumber?: number;
   activity?: ActivityResponse;
+  fetching?: boolean;
 };
 
-const ActivitySummary = ({ activity, allActivity, pageNumber }: Props) => {
+const ActivitySummary = ({
+  activity,
+  allActivity,
+  pageNumber,
+  fetching,
+}: Props) => {
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
 
@@ -33,6 +40,16 @@ const ActivitySummary = ({ activity, allActivity, pageNumber }: Props) => {
   const getPageNumbers = (allPages: number) => {
     return Array.from({ length: allPages }, (_, index) => index + 1);
   };
+
+  if (fetching) {
+    return (
+      <div className="mt-3 flex flex-col">
+        <div className="mt-2">
+          <Skeleton count={8} height={145} className="mb-8" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-3 flex flex-col">

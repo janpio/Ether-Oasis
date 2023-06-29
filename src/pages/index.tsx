@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
-import type { GetServerSideProps, NextPage } from 'next';
-import react from 'react';
+import type { NextPage } from 'next';
+import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
 import {
@@ -30,20 +30,23 @@ interface IndexProps {
   activity: ActivityResponse;
 }
 
-const Index: NextPage<IndexProps> = (initialProps) => {
-  const { walletAddress, ensName } = react.useContext(GlobalContext);
-  const [displayName, setDisplayName] = react.useState('');
-  const [fetchedTokens, setFetchedTokens] = react.useState(
-    initialProps.fetchedTokens
-  );
-  const [tokensWithPrices, setTokensWithPrices] = react.useState(
-    initialProps.tokensWithPrices
-  );
-  const [ethPrice, setEthPrice] = react.useState(initialProps.ethPrice);
-  const [ethImage, setEthImage] = react.useState(initialProps.ethImage);
-  const [activity, setActivity] = react.useState(initialProps.activity);
+const Index: NextPage<IndexProps> = () => {
+  const { walletAddress, ensName } = useContext(GlobalContext);
+  const [displayName, setDisplayName] = useState('');
+  const [fetchedTokens, setFetchedTokens] = useState<Token[]>([]);
+  const [tokensWithPrices, setTokensWithPrices] = useState({});
+  const [ethPrice, setEthPrice] = useState(0);
+  const [ethImage, setEthImage] = useState('');
+  const [activity, setActivity] = useState<
+    ActivityResponse & { activityItems: any[] }
+  >({
+    activityItems: [],
+    totalPages: 1,
+    pageNumber: 1,
+  });
+  const [fetching, setFetching] = useState(false);
 
-  react.useEffect(() => {
+  useEffect(() => {
     if (ensName && ensName !== '') {
       setDisplayName(ensName);
     } else if (walletAddress && walletAddress !== '') {
@@ -53,8 +56,8 @@ const Index: NextPage<IndexProps> = (initialProps) => {
     }
   }, [walletAddress, ensName]);
 
-  const reFetchPageData = async (address: string) => {
-    console.log('refetching page data');
+  const fetchPageData = async (address: string) => {
+    console.log('fetching page data');
     let localFetchedTokens = await getTokens(address);
 
     if (localFetchedTokens.length > 0) {
@@ -94,16 +97,14 @@ const Index: NextPage<IndexProps> = (initialProps) => {
       ...activity,
       activityItems: activityItemsWithAssetTransfers,
     });
+    setFetching(false);
   };
 
   // if the wallet address changes, re-fetch the page data, do not fetch on initial load
-  react.useEffect(() => {
-    if (
-      walletAddress &&
-      walletAddress !== '' &&
-      initialProps.fetchedTokens.length === 0
-    ) {
-      reFetchPageData(walletAddress);
+  useEffect(() => {
+    if (walletAddress && walletAddress !== '' && !fetching) {
+      setFetching(true);
+      fetchPageData(walletAddress);
     }
   }, [walletAddress]);
 
@@ -145,6 +146,7 @@ const Index: NextPage<IndexProps> = (initialProps) => {
                   tokensWithPrices={tokensWithPrices}
                   ethPrice={ethPrice}
                   ethImage={ethImage}
+                  fetching={fetching}
                 />
               </div>
             }
@@ -155,7 +157,11 @@ const Index: NextPage<IndexProps> = (initialProps) => {
           <Card
             title="Activity"
             content={
-              <ActivitySummary allActivity={false} activity={activity} />
+              <ActivitySummary
+                allActivity={false}
+                activity={activity}
+                fetching={fetching}
+              />
             }
             centerContent={false}
             key={activity.activityItems.length}
@@ -164,113 +170,6 @@ const Index: NextPage<IndexProps> = (initialProps) => {
       </div>
     </Main>
   );
-};
-
-export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
-  req,
-  res,
-}) => {
-  const storedWalletAddress = req.cookies.walletAddress as string;
-  console.log('req', req.cookies);
-  console.log('res', res);
-  console.log('getServerSideProps: storedWalletAddress:', storedWalletAddress);
-
-  const fetchTokens = async (address: string): Promise<Token[]> => {
-    if (address && address !== '') {
-      const tokens = await getTokens(address);
-      return tokens;
-    }
-    return [];
-  };
-
-  if (!storedWalletAddress || storedWalletAddress === '') {
-    return {
-      props: {
-        fetchedTokens: [],
-        tokensWithPrices: {},
-        ethPrice: 0,
-        ethImage: '',
-        activity: {
-          activityItems: [],
-          totalPages: 1,
-          pageNumber: 1,
-        },
-      },
-    };
-  }
-
-  try {
-    const fetchedTokens = await fetchTokens(storedWalletAddress);
-    const tokensWithPrices = await getTokenPrices(fetchedTokens);
-    const ethPrice = await getEthPrice();
-    const ethImage = await getTokenImage('ETH');
-    const activity: ActivityResponse = await getActivity(
-      storedWalletAddress,
-      1
-    );
-
-    const { activityItems } = activity;
-
-    // Fetch asset transfers for each activity item asynchronously using Promise.all
-    const activityItemsWithAssetTransfers = await Promise.all(
-      activityItems.map(async (activityItem) => {
-        const assetTransfers = await getAssetTransfers(activityItem);
-        if (assetTransfers[0] !== defaultTransfer) {
-          return { ...activityItem, assetTransfers };
-        }
-        return activityItem;
-      })
-    );
-
-    if (fetchedTokens.length > 0) {
-      const updatedTokens = fetchedTokens.map(async (token) => {
-        const image = await getTokenImage(token.symbol);
-        return { ...token, image };
-      });
-      const updatedTokensWithImages = await Promise.all(updatedTokens);
-
-      return {
-        props: {
-          fetchedTokens: updatedTokensWithImages,
-          tokensWithPrices,
-          ethPrice,
-          ethImage,
-          activity: {
-            ...activity,
-            activityItems: activityItemsWithAssetTransfers,
-          },
-        },
-      };
-    }
-
-    return {
-      props: {
-        fetchedTokens,
-        tokensWithPrices,
-        ethPrice,
-        ethImage,
-        activity: {
-          ...activity,
-          activityItems: activityItemsWithAssetTransfers,
-        },
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching tokens:', error);
-    return {
-      props: {
-        fetchedTokens: [],
-        tokensWithPrices: {},
-        ethPrice: 0,
-        ethImage: '',
-        activity: {
-          activityItems: [],
-          totalPages: 1,
-          pageNumber: 1,
-        },
-      },
-    };
-  }
 };
 
 export default Index;
