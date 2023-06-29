@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
-import Cookies from 'js-cookie';
 import type { GetServerSideProps, NextPage } from 'next';
-import { useContext, useEffect, useState } from 'react';
+import react from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
 import {
@@ -32,27 +31,19 @@ interface IndexProps {
 }
 
 const Index: NextPage<IndexProps> = (initialProps) => {
-  const { walletAddress, ensName } = useContext(GlobalContext);
-  const [displayName, setDisplayName] = useState('');
-  const [fetchedTokens, setFetchedTokens] = useState(
+  const { walletAddress, ensName } = react.useContext(GlobalContext);
+  const [displayName, setDisplayName] = react.useState('');
+  const [fetchedTokens, setFetchedTokens] = react.useState(
     initialProps.fetchedTokens
   );
-  const [tokensWithPrices, setTokensWithPrices] = useState(
+  const [tokensWithPrices, setTokensWithPrices] = react.useState(
     initialProps.tokensWithPrices
   );
-  const [ethPrice, setEthPrice] = useState(initialProps.ethPrice);
-  const [ethImage, setEthImage] = useState(initialProps.ethImage);
-  const [activity, setActivity] = useState(initialProps.activity);
-  const [cookieWalletAddress, setCookieWalletAddress] = useState('');
+  const [ethPrice, setEthPrice] = react.useState(initialProps.ethPrice);
+  const [ethImage, setEthImage] = react.useState(initialProps.ethImage);
+  const [activity, setActivity] = react.useState(initialProps.activity);
 
-  useEffect(() => {
-    const storedWalletAddress = Cookies.get('walletAddress');
-    if (storedWalletAddress && storedWalletAddress !== '') {
-      setCookieWalletAddress(storedWalletAddress);
-    }
-  }, []);
-
-  useEffect(() => {
+  react.useEffect(() => {
     if (ensName && ensName !== '') {
       setDisplayName(ensName);
     } else if (walletAddress && walletAddress !== '') {
@@ -106,7 +97,7 @@ const Index: NextPage<IndexProps> = (initialProps) => {
   };
 
   // if the wallet address changes, re-fetch the page data, do not fetch on initial load
-  useEffect(() => {
+  react.useEffect(() => {
     if (
       walletAddress &&
       walletAddress !== '' &&
@@ -116,10 +107,7 @@ const Index: NextPage<IndexProps> = (initialProps) => {
     }
   }, [walletAddress]);
 
-  if (
-    (!cookieWalletAddress || cookieWalletAddress === '') &&
-    (!walletAddress || walletAddress === '')
-  ) {
+  if (!walletAddress || walletAddress === '') {
     return (
       <Main
         meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}
@@ -182,6 +170,7 @@ export const getServerSideProps: GetServerSideProps<IndexProps> = async ({
   req,
 }) => {
   const storedWalletAddress = req.cookies.walletAddress as string;
+  console.log('req', req.cookies);
   console.log('getServerSideProps: storedWalletAddress:', storedWalletAddress);
 
   const fetchTokens = async (address: string): Promise<Token[]> => {
