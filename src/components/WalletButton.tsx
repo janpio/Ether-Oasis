@@ -12,7 +12,7 @@ import { useContext, useEffect, useState } from 'react';
 import { GlobalContext } from '@/context/GlobalContext';
 import { truncateString } from '@/utils/truncateString';
 
-const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_MAINNET_RPC_URL;
+const MAINNET_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`;
 
 type WalletConnectOptions = {
   bridge?: string; // default = 'https://bridge.walletconnect.org'
