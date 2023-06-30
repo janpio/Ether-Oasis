@@ -5,6 +5,7 @@ import coinbaseWalletModule from '@web3-onboard/coinbase';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import walletConnectModule from '@web3-onboard/walletconnect';
+import type { JsonRpcProvider } from 'ethers';
 import { ethers } from 'ethers';
 import Cookies from 'js-cookie';
 import { useContext, useEffect, useState } from 'react';
@@ -51,8 +52,7 @@ type WalletConnectOptions = {
 );
 
 const WalletButton = () => {
-  const { walletAddress, ensName, ethersProvider, updateVariables } =
-    useContext(GlobalContext);
+  const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
   const [isConnected, setIsConnected] = useState(false); // New state to track connection status
   const [isMousingOver, setIsMousingOver] = useState(false); // New state to track mouseover status
 
@@ -107,33 +107,34 @@ const WalletButton = () => {
 
   const walletConnect = walletConnectModule(wcV1InitOptions);
 
+  const loadEns = async (address: string, provider: JsonRpcProvider) => {
+    const ens = await fetchEns(address, provider);
+    return ens;
+  };
+
   useEffect(() => {
     const storedWalletAddress = Cookies.get('walletAddress');
-    const loadProvider = async (address: string) => {
+    const loadProvider = async () => {
       const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL, 1);
-      console.log('provider', provider);
-      handleUpdate(address, '', provider);
+      return provider;
+    };
+    const setContext = async () => {
+      if (storedWalletAddress) {
+        const provider = await loadProvider();
+        const localEns = await loadEns(storedWalletAddress, provider);
+        handleUpdate(storedWalletAddress, localEns, provider);
+        setIsConnected(true);
+      }
     };
 
-    if (storedWalletAddress) {
-      handleUpdate(storedWalletAddress, '', null);
-      setIsConnected(true);
-    }
-
-    if (storedWalletAddress && !ethersProvider) {
-      loadProvider(storedWalletAddress);
-    }
+    setContext();
   }, []);
 
-  useEffect(() => {
-    if (walletAddress && walletAddress !== '' && ethersProvider) {
-      const loadEns = async () => {
-        const ens = await fetchEns(walletAddress, ethersProvider);
-        handleUpdate(walletAddress, ens, ethersProvider);
-      };
-      loadEns();
-    }
-  }, [walletAddress, ethersProvider]);
+  // useEffect(() => {
+  //   if (walletAddress && walletAddress !== '' && ethersProvider) {
+  //     loadEns();
+  //   }
+  // }, [walletAddress, ethersProvider]);
 
   useEffect(() => {
     if (walletAddress && walletAddress !== '') {
