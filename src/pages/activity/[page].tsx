@@ -1,21 +1,60 @@
-import type { GetServerSideProps, NextPage } from 'next';
+/* eslint-disable no-console */
+import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
-import type { ActivityResponse } from '@/api/types/activityTypes';
+import type { ActivityItem, ActivityResponse } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
+import { GlobalContext } from '@/context/GlobalContext';
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
 
-interface ActivityProps {
-  activity: ActivityResponse;
-}
-
-const ActivityPage: NextPage<ActivityProps> = ({ activity }: ActivityProps) => {
+const ActivityPage: NextPage = () => {
+  const { walletAddress } = useContext(GlobalContext);
   const router = useRouter();
   const { page } = router.query;
+  const [activity, setActivity] = useState<
+    ActivityResponse & { activityItems: ActivityItem[] }
+  >({
+    activityItems: [],
+    totalPages: 1,
+    pageNumber: 1,
+  });
+  const [fetching, setFetching] = useState(false);
+
+  const fetchPageData = async (address: string, currentPage: string) => {
+    console.log('fetching page data');
+    const pageNumber = Number(currentPage) || 1;
+
+    const localActivity = await getActivity(address, pageNumber);
+    const { activityItems } = localActivity;
+
+    // Fetch asset transfers for each activity item asynchronously using Promise.all
+    const activityItemsWithAssetTransfers = await Promise.all(
+      activityItems.map(async (activityItem) => {
+        const assetTransfers = await getAssetTransfers(activityItem);
+        if (assetTransfers[0] !== defaultTransfer) {
+          return { ...activityItem, assetTransfers };
+        }
+        return activityItem;
+      })
+    );
+    setActivity({
+      ...localActivity,
+      activityItems: activityItemsWithAssetTransfers,
+    });
+    setFetching(false);
+  };
+
+  useEffect(() => {
+    if (walletAddress && walletAddress !== '' && !fetching) {
+      setFetching(true);
+      fetchPageData(walletAddress, page as string);
+    }
+  }, [walletAddress, page]);
 
   return (
     <Main
@@ -33,41 +72,13 @@ const ActivityPage: NextPage<ActivityProps> = ({ activity }: ActivityProps) => {
             allActivity
             pageNumber={Number(page)}
             activity={activity}
+            fetching={fetching}
           />
         }
         centerContent={false}
       />
     </Main>
   );
-};
-
-export const getServerSideProps: GetServerSideProps<ActivityProps> = async ({
-  req,
-  query,
-}) => {
-  const storedWalletAddress = req.cookies.walletAddress as string;
-  const { page } = query;
-  const pageNumber = Number(page) || 1;
-
-  const activity = await getActivity(storedWalletAddress, pageNumber);
-  const { activityItems } = activity;
-
-  // Fetch asset transfers for each activity item asynchronously using Promise.all
-  const activityItemsWithAssetTransfers = await Promise.all(
-    activityItems.map(async (activityItem) => {
-      const assetTransfers = await getAssetTransfers(activityItem);
-      if (assetTransfers[0] !== defaultTransfer) {
-        return { ...activityItem, assetTransfers };
-      }
-      return activityItem;
-    })
-  );
-
-  return {
-    props: {
-      activity: { ...activity, activityItems: activityItemsWithAssetTransfers },
-    },
-  };
 };
 
 export default ActivityPage;

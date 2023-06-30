@@ -29,7 +29,7 @@ const ActivitySummary = ({
       setActivityItems(activity.activityItems);
       setTotalPages(activity.totalPages);
     }
-  }, [pageNumber]);
+  }, [activity]);
 
   useEffect(() => {
     if (!allActivity && activityItems.length > 12) {
