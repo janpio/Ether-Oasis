@@ -51,7 +51,8 @@ type WalletConnectOptions = {
 );
 
 const WalletButton = () => {
-  const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
+  const { walletAddress, ensName, ethersProvider, updateVariables } =
+    useContext(GlobalContext);
   const [isConnected, setIsConnected] = useState(false); // New state to track connection status
   const [isMousingOver, setIsMousingOver] = useState(false); // New state to track mouseover status
 
@@ -108,17 +109,28 @@ const WalletButton = () => {
 
   useEffect(() => {
     const storedWalletAddress = Cookies.get('walletAddress');
+    const loadProvider = async (address: string) => {
+      const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL);
+      console.log('provider', provider);
+      handleUpdate(address, '', provider);
+    };
+
     if (storedWalletAddress) {
       handleUpdate(storedWalletAddress, '', null);
+      loadProvider(storedWalletAddress);
       setIsConnected(true);
-      const loadProviderAndENS = async () => {
-        const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL);
-        const ens = await fetchEns(storedWalletAddress, provider);
-        handleUpdate(storedWalletAddress, ens, provider);
-      };
-      loadProviderAndENS();
     }
   }, []);
+
+  useEffect(() => {
+    if (walletAddress && walletAddress !== '' && ethersProvider) {
+      const loadEns = async () => {
+        const ens = await fetchEns(walletAddress, ethersProvider);
+        handleUpdate(walletAddress, ens, ethersProvider);
+      };
+      loadEns();
+    }
+  }, [walletAddress, ethersProvider]);
 
   useEffect(() => {
     if (walletAddress && walletAddress !== '') {
