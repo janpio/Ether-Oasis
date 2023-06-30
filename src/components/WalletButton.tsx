@@ -110,15 +110,18 @@ const WalletButton = () => {
   useEffect(() => {
     const storedWalletAddress = Cookies.get('walletAddress');
     const loadProvider = async (address: string) => {
-      const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL);
+      const provider = new ethers.JsonRpcProvider(MAINNET_RPC_URL, 1);
       console.log('provider', provider);
       handleUpdate(address, '', provider);
     };
 
     if (storedWalletAddress) {
       handleUpdate(storedWalletAddress, '', null);
-      loadProvider(storedWalletAddress);
       setIsConnected(true);
+    }
+
+    if (storedWalletAddress && !ethersProvider) {
+      loadProvider(storedWalletAddress);
     }
   }, []);
 
