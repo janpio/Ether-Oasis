@@ -5,14 +5,14 @@ import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
 import {
+  getAlchemyTokens,
   getEthPrice,
   getTokenImage,
   getTokenPrices,
-  getTokens,
 } from '@/api/tokens';
 import type { ActivityResponse } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
-import type { Token } from '@/api/types/tokenTypes';
+import type { AlchemyToken } from '@/api/types/tokenTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 import NameTag from '@/components/NameTag';
@@ -25,7 +25,7 @@ import { Main } from '@/templates/Main';
 const Index: NextPage = () => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
-  const [fetchedTokens, setFetchedTokens] = useState<Token[]>([]);
+  const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
   const [tokensWithPrices, setTokensWithPrices] = useState({});
   const [ethPrice, setEthPrice] = useState(0);
   const [ethImage, setEthImage] = useState('');
@@ -50,20 +50,21 @@ const Index: NextPage = () => {
 
   const fetchPageData = async (address: string) => {
     console.log('fetching page data');
-    let localFetchedTokens = await getTokens(address);
+    // let localFetchedTokens = await getTokens(address);
+    const localFetchedTokens2 = await getAlchemyTokens(address);
 
-    if (localFetchedTokens.length > 0) {
-      const updatedTokens = localFetchedTokens.map(async (token) => {
-        const image = await getTokenImage(token.symbol);
-        return { ...token, image };
-      });
-      const updatedTokensWithImages = await Promise.all(updatedTokens);
-      localFetchedTokens = updatedTokensWithImages;
-    }
+    // if (localFetchedTokens.length > 0) {
+    //   const updatedTokens = localFetchedTokens.map(async (token) => {
+    //     const image = await getTokenImage(token.symbol);
+    //     return { ...token, image };
+    //   });
+    //   const updatedTokensWithImages = await Promise.all(updatedTokens);
+    //   localFetchedTokens = updatedTokensWithImages;
+    // }
 
     const [localTokensWithPrices, localEthPrice, localEthImage, localActivity] =
       await Promise.all([
-        getTokenPrices(localFetchedTokens),
+        getTokenPrices(localFetchedTokens2),
         getEthPrice(),
         getTokenImage('ETH'),
         getActivity(address, 1),
@@ -81,7 +82,7 @@ const Index: NextPage = () => {
         return activityItem;
       })
     );
-    setFetchedTokens(localFetchedTokens);
+    setFetchedTokens(localFetchedTokens2);
     setTokensWithPrices(localTokensWithPrices);
     setEthPrice(localEthPrice);
     setEthImage(localEthImage);

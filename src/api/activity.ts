@@ -16,7 +16,7 @@ import type {
 import { defaultTransfer } from './types/activityTypes';
 
 const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
-const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY;
 
 const checkIfContractAddress = async (address: string) => {
   const code = await quickNodeProvider.getCode(address);

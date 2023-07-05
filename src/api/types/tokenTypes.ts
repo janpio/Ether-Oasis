@@ -9,6 +9,16 @@ export type Token = {
   image?: string;
 };
 
+export type AlchemyToken = {
+  balance: string;
+  contractAddress: string;
+  decimals: number;
+  logo: string;
+  name: string;
+  symbol: string;
+  tokenBalance: string;
+};
+
 export type ApiResponse = {
   pageNumber: number;
   result: Token[];

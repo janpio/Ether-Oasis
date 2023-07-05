@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 import React, { useMemo, useState } from 'react';
 
-import type { Token } from '@/api/types/tokenTypes';
+import type { AlchemyToken } from '@/api/types/tokenTypes';
 
 type PortfolioRowProps = {
-  token: Token;
+  token: AlchemyToken;
   tokenPrice: number | undefined;
 };
 
@@ -14,7 +14,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
 
   useMemo(() => {
     if (tokenPrice && token) {
-      setTotalBalance(Number(ethers.formatEther(token.totalBalance)));
+      setTotalBalance(Number(ethers.formatEther(token.tokenBalance)));
     }
   }, [tokenPrice, token]);
 
@@ -31,7 +31,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
       <td className="w-3/12 text-left">
         <img
           className="-mt-1 mr-2 inline-block h-6 w-6 rounded-full"
-          src={token.image}
+          src={token.logo}
           alt={token.symbol}
         />
         {token.symbol}

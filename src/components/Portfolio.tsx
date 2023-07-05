@@ -4,13 +4,13 @@ import { ethers } from 'ethers';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 
-import type { Token } from '@/api/types/tokenTypes';
+import type { AlchemyToken } from '@/api/types/tokenTypes';
 import { GlobalContext } from '@/context/GlobalContext';
 
 import PortfolioRow from './PortfolioRow';
 
 type PortfolioProps = {
-  tokensInWallet: Token[];
+  tokensInWallet: AlchemyToken[];
   tokensWithPrices: { [tokenSymbol: string]: number };
   ethPrice: number;
   ethImage: string;
@@ -45,7 +45,7 @@ const Portfolio = ({
         (total, token) =>
           total +
           (tokensWithPrices[token.symbol.toLowerCase()] ?? 0) *
-            Number(ethers.formatEther(token.totalBalance)),
+            Number(ethers.formatEther(token.tokenBalance)),
         0
       );
       return ethBalanceValue + tokenValue;

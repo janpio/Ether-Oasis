@@ -1,17 +1,16 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ethers } from 'ethers';
-
 import coinGeckoData from '@/utils/CoinGeckoList.json';
-import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
-import type { ApiResponse, Token } from './types/tokenTypes';
+import type { AlchemyToken } from './types/tokenTypes';
+
+const ALCHEMY_API_KEY = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
 
 const tokensData = coinGeckoData.tokens;
 
-const checkIfStartsWith0x = (str: string) => {
-  return str.startsWith('0x');
-};
+// const checkIfStartsWith0x = (str: string) => {
+//   return str.startsWith('0x');
+// };
 
 const findIdBySymbol = (symbol: string) => {
   const localToken = tokensData.find((token) => token.symbol === symbol);
@@ -23,41 +22,97 @@ const findSymbolById = (id: string) => {
   return localToken ? localToken.symbol : '';
 };
 
-const parseTokens = (tokens: Token[]): Token[] => {
-  const parsedTokens = <Token[]>[];
-  tokens.forEach((token) => {
-    const parsedToken = <Token>{};
-    parsedToken.address = token.address;
-    parsedToken.decimals = token.decimals;
-    parsedToken.name = token.name;
-    parsedToken.quantityIn = token.quantityIn;
-    parsedToken.quantityOut = token.quantityOut;
-    parsedToken.symbol =
-      token.symbol.length > 6 ? token.symbol.slice(0, 6) : token.symbol;
-    parsedToken.totalBalance = token.totalBalance;
-    if (
-      Number(ethers.formatEther(token.totalBalance)) >= 0.01 &&
-      !checkIfStartsWith0x(token.symbol)
-    ) {
-      parsedTokens.push(parsedToken);
-    }
-  });
-  return parsedTokens;
+const hexToDecimal = (hex: string): string => {
+  // Remove "0x" prefix if present
+  const value = hex;
+
+  // Convert hexadecimal to decimal
+  const decimal = BigInt(value).toString();
+
+  return decimal;
 };
 
-export const getTokens = async (walletAddress: string): Promise<Token[]> => {
-  const tokens = <Token[]>[];
+export const getAlchemyTokens = async (
+  address: string
+): Promise<AlchemyToken[]> => {
+  const url = ALCHEMY_API_KEY;
+  const options = {
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      id: 1,
+      jsonrpc: '2.0',
+      method: 'alchemy_getTokenBalances',
+      params: [address],
+    }),
+  };
 
-  const heads: ApiResponse = await quickNodeProvider.send(
-    'qn_getWalletTokenBalance',
-    [
-      {
-        wallet: walletAddress,
-      },
-    ]
-  );
-  tokens.push(...heads.result);
-  return parseTokens(tokens);
+  const getBalancesFromAlchemy = async () => {
+    // fetching the token balances
+    const res = await fetch(url, options);
+    const response = await res.json();
+
+    // Getting balances from the response
+    const balances = response.result;
+
+    // Remove tokens with zero balance
+    const nonZeroBalances = await balances.tokenBalances.filter(
+      (token: { tokenBalance: string }) => {
+        const convertedBalance = hexToDecimal(token.tokenBalance);
+        return (
+          convertedBalance !== '0' &&
+          convertedBalance !== '0.0' &&
+          convertedBalance !== '0.00'
+        );
+      }
+    );
+
+    const alchemyTokens = [];
+
+    // Loop through all tokens with non-zero balance
+    for (const token of nonZeroBalances) {
+      // Get balance of token
+      let balance = token.tokenBalance;
+
+      // request options for making a request to get tokenMetadata
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: 1,
+          jsonrpc: '2.0',
+          method: 'alchemy_getTokenMetadata',
+          params: [token.contractAddress],
+        }),
+      };
+
+      // parsing the response and getting metadata from it
+      // eslint-disable-next-line no-await-in-loop
+      const res2 = await fetch(url, options);
+      // eslint-disable-next-line no-await-in-loop
+      let metadata = await res2.json();
+      metadata = metadata.result;
+      // console.log('metadata', metadata);
+
+      // Compute token balance in human-readable format
+      balance /= 10 ** metadata.decimals;
+      balance = balance.toFixed(5);
+      const combinedToken = { ...metadata, balance, ...token };
+      if (combinedToken.symbol.length < 8 && Number(balance) >= 0.01) {
+        alchemyTokens.push(combinedToken);
+      }
+      // Print name, balance, and symbol of token
+      // eslint-disable-next-line no-plusplus
+    }
+    return alchemyTokens;
+  };
+
+  const getTokens2Return = await getBalancesFromAlchemy();
+  return getTokens2Return;
 };
 
 export const getEthPrice = async () => {
@@ -105,7 +160,7 @@ export const getTokenImage = async (tokenSymbol: string): Promise<string> => {
   return '';
 };
 
-export const getTokenPrices = async (tokensInWallet: Token[]) => {
+export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
   const tokenIds = tokensInWallet.map((token) =>
     findIdBySymbol(token.symbol.toLowerCase())
   );
