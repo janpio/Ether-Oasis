@@ -33,6 +33,7 @@ const hexToDecimal = (hex: string): string => {
 
   return decimal;
 };
+
 const loadProvider = async () => {
   const provider = new ethers.JsonRpcProvider(ALCHEMY_MAINNET_NODE_URL);
   return provider;
@@ -49,6 +50,48 @@ export const getEthBalance = async (walletAddress: string) => {
     throw error;
   }
 };
+
+export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
+  const tokenIds = tokensInWallet.map((token) =>
+    findIdBySymbol(token.symbol.toLowerCase())
+  );
+
+  try {
+    const params = new URLSearchParams({
+      ids: tokenIds.join(),
+      vs_currencies: 'usd',
+    }).toString();
+
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch token prices');
+    }
+
+    const data = await response.json();
+
+    const updatedTokensWithPrices: { [tokenSymbol: string]: number } = {};
+
+    Object.keys(data).forEach((id) => {
+      if (Object.prototype.hasOwnProperty.call(data, id)) {
+        const price = data[id].usd;
+        updatedTokensWithPrices[findSymbolById(id)] = price;
+      }
+    });
+
+    if (Object.keys(updatedTokensWithPrices).length > 0) {
+      return updatedTokensWithPrices;
+    }
+
+    return {};
+  } catch (error) {
+    console.error('Error fetching token prices:', error);
+    return {};
+  }
+};
+
 export const getAlchemyTokens = async (
   address: string
 ): Promise<AlchemyToken[]> => {
@@ -142,7 +185,15 @@ export const getAlchemyTokens = async (
 
   tokensToReturn.unshift(etherHoldingsAsAlchemyToken);
 
-  return tokensToReturn;
+  const tokenPrices = await getTokenPrices(tokensToReturn);
+
+  const updatedReturn = tokensToReturn.map((token) => {
+    const price = tokenPrices[token.symbol.toLowerCase()];
+    const updatedToken = { ...token, price: price || null };
+    return updatedToken;
+  });
+
+  return updatedReturn;
 };
 
 export const getEthPrice = async () => {
@@ -188,45 +239,4 @@ export const getTokenImage = async (tokenSymbol: string): Promise<string> => {
     return '';
   }
   return '';
-};
-
-export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
-  const tokenIds = tokensInWallet.map((token) =>
-    findIdBySymbol(token.symbol.toLowerCase())
-  );
-
-  try {
-    const params = new URLSearchParams({
-      ids: tokenIds.join(),
-      vs_currencies: 'usd',
-    }).toString();
-
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?${params}`
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch token prices');
-    }
-
-    const data = await response.json();
-
-    const updatedTokensWithPrices: { [tokenSymbol: string]: number } = {};
-
-    Object.keys(data).forEach((id) => {
-      if (Object.prototype.hasOwnProperty.call(data, id)) {
-        const price = data[id].usd;
-        updatedTokensWithPrices[findSymbolById(id)] = price;
-      }
-    });
-
-    if (Object.keys(updatedTokensWithPrices).length > 0) {
-      return updatedTokensWithPrices;
-    }
-
-    return {};
-  } catch (error) {
-    console.error('Error fetching token prices:', error);
-    return {};
-  }
 };

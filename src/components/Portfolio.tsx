@@ -9,33 +9,24 @@ import PortfolioRow from './PortfolioRow';
 
 type PortfolioProps = {
   tokensInWallet: AlchemyToken[];
-  tokensWithPrices: { [tokenSymbol: string]: number };
   ethPrice: number;
   fetching?: boolean;
 };
 
-const Portfolio = ({
-  tokensInWallet,
-  tokensWithPrices,
-  ethPrice,
-  fetching,
-}: PortfolioProps) => {
+const Portfolio = ({ tokensInWallet, ethPrice, fetching }: PortfolioProps) => {
   const [totalValue, setTotalValue] = useState(0);
 
   useMemo(() => {
     const calculateTotalValue = () => {
       const tokenValue = tokensInWallet.reduce(
-        (total, token) =>
-          total +
-          (tokensWithPrices[token.symbol.toLowerCase()] ?? 0) *
-            Number(token.balance),
+        (total, token) => total + (token.price ?? 0) * Number(token.balance),
         0
       );
       return tokenValue;
     };
 
     setTotalValue(calculateTotalValue());
-  }, [ethPrice, tokensWithPrices, tokensInWallet]);
+  }, [ethPrice, tokensInWallet]);
 
   if (fetching) {
     return (
@@ -124,11 +115,7 @@ const Portfolio = ({
             <PortfolioRow
               key={token.symbol}
               token={token}
-              tokenPrice={
-                tokensWithPrices[token.symbol.toLowerCase()]
-                  ? tokensWithPrices[token.symbol.toLowerCase()]
-                  : 0
-              }
+              tokenPrice={token.price ? token.price : 0}
             />
           ))}
         </tbody>

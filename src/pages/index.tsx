@@ -4,7 +4,7 @@ import type { NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
-import { getAlchemyTokens, getEthPrice, getTokenPrices } from '@/api/tokens';
+import { getAlchemyTokens, getEthPrice } from '@/api/tokens';
 import type { ActivityResponse } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import type { AlchemyToken } from '@/api/types/tokenTypes';
@@ -21,7 +21,6 @@ const Index: NextPage = () => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
   const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
-  const [tokensWithPrices, setTokensWithPrices] = useState({});
   const [ethPrice, setEthPrice] = useState(0);
   const [activity, setActivity] = useState<
     ActivityResponse & { activityItems: any[] }
@@ -46,12 +45,10 @@ const Index: NextPage = () => {
     console.log('fetching page data');
     const localFetchedTokens = await getAlchemyTokens(address);
 
-    const [localTokensWithPrices, localEthPrice, localActivity] =
-      await Promise.all([
-        getTokenPrices(localFetchedTokens),
-        getEthPrice(),
-        getActivity(address, 1),
-      ]);
+    const [localEthPrice, localActivity] = await Promise.all([
+      getEthPrice(),
+      getActivity(address, 1),
+    ]);
 
     const { activityItems } = localActivity;
 
@@ -66,7 +63,6 @@ const Index: NextPage = () => {
       })
     );
     setFetchedTokens(localFetchedTokens);
-    setTokensWithPrices(localTokensWithPrices);
     setEthPrice(localEthPrice);
     setActivity({
       ...activity,
@@ -118,7 +114,6 @@ const Index: NextPage = () => {
               <div>
                 <Portfolio
                   tokensInWallet={fetchedTokens}
-                  tokensWithPrices={tokensWithPrices}
                   ethPrice={ethPrice}
                   fetching={fetching}
                 />

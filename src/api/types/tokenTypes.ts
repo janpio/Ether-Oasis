@@ -17,6 +17,7 @@ export type AlchemyToken = {
   name: string;
   symbol: string;
   tokenBalance: string;
+  price?: number;
 };
 
 export type ApiResponse = {
