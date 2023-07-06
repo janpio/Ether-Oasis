@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import React, { useMemo, useState } from 'react';
 
 import type { AlchemyToken } from '@/api/types/tokenTypes';
@@ -14,7 +13,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
 
   useMemo(() => {
     if (tokenPrice && token) {
-      setTotalBalance(Number(ethers.formatEther(token.tokenBalance)));
+      setTotalBalance(Number(token.balance));
     }
   }, [tokenPrice, token]);
 

@@ -11,7 +11,7 @@ export type Token = {
 
 export type AlchemyToken = {
   balance: string;
-  contractAddress: string;
+  contractAddress?: string;
   decimals: number;
   logo: string;
   name: string;

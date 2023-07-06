@@ -1,11 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable tailwindcss/no-custom-classname */
-import { ethers } from 'ethers';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 
 import type { AlchemyToken } from '@/api/types/tokenTypes';
-import { GlobalContext } from '@/context/GlobalContext';
 
 import PortfolioRow from './PortfolioRow';
 
@@ -13,7 +11,6 @@ type PortfolioProps = {
   tokensInWallet: AlchemyToken[];
   tokensWithPrices: { [tokenSymbol: string]: number };
   ethPrice: number;
-  ethImage: string;
   fetching?: boolean;
 };
 
@@ -21,38 +18,24 @@ const Portfolio = ({
   tokensInWallet,
   tokensWithPrices,
   ethPrice,
-  ethImage,
   fetching,
 }: PortfolioProps) => {
-  const { walletAddress, ethersProvider } = useContext(GlobalContext);
-  const [ethBalance, setEthBalance] = useState('0');
   const [totalValue, setTotalValue] = useState(0);
-
-  useEffect(() => {
-    if (walletAddress && ethersProvider) {
-      const getBalance = async () => {
-        const balance = await ethersProvider.getBalance(walletAddress);
-        setEthBalance(Number(ethers.formatEther(balance)).toFixed(5));
-      };
-      getBalance();
-    }
-  }, [walletAddress, ethersProvider]);
 
   useMemo(() => {
     const calculateTotalValue = () => {
-      const ethBalanceValue = Number(ethBalance) * ethPrice;
       const tokenValue = tokensInWallet.reduce(
         (total, token) =>
           total +
           (tokensWithPrices[token.symbol.toLowerCase()] ?? 0) *
-            Number(ethers.formatEther(token.tokenBalance)),
+            Number(token.balance),
         0
       );
-      return ethBalanceValue + tokenValue;
+      return tokenValue;
     };
 
     setTotalValue(calculateTotalValue());
-  }, [ethBalance, ethPrice, tokensWithPrices, tokensInWallet]);
+  }, [ethPrice, tokensWithPrices, tokensInWallet]);
 
   if (fetching) {
     return (
@@ -137,21 +120,6 @@ const Portfolio = ({
           </tr>
         </thead>
         <tbody className="text-lg">
-          <tr className="border-b border-gray-700">
-            <td>
-              <img
-                className="-mt-1 mr-2 inline-block h-6 w-6 rounded-full"
-                src={ethImage}
-                alt="ETH"
-              />
-              ETH
-            </td>
-            <td>${ethPrice.toFixed(2)}</td>
-            <td>{ethBalance}</td>
-            <td className="text-right">
-              ${(Number(ethBalance) * ethPrice).toFixed(2)}
-            </td>
-          </tr>
           {tokensInWallet.map((token) => (
             <PortfolioRow
               key={token.symbol}

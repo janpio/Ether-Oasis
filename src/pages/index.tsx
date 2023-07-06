@@ -4,12 +4,7 @@ import type { NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
-import {
-  getAlchemyTokens,
-  getEthPrice,
-  getTokenImage,
-  getTokenPrices,
-} from '@/api/tokens';
+import { getAlchemyTokens, getEthPrice, getTokenPrices } from '@/api/tokens';
 import type { ActivityResponse } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import type { AlchemyToken } from '@/api/types/tokenTypes';
@@ -28,7 +23,6 @@ const Index: NextPage = () => {
   const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
   const [tokensWithPrices, setTokensWithPrices] = useState({});
   const [ethPrice, setEthPrice] = useState(0);
-  const [ethImage, setEthImage] = useState('');
   const [activity, setActivity] = useState<
     ActivityResponse & { activityItems: any[] }
   >({
@@ -50,23 +44,12 @@ const Index: NextPage = () => {
 
   const fetchPageData = async (address: string) => {
     console.log('fetching page data');
-    // let localFetchedTokens = await getTokens(address);
-    const localFetchedTokens2 = await getAlchemyTokens(address);
+    const localFetchedTokens = await getAlchemyTokens(address);
 
-    // if (localFetchedTokens.length > 0) {
-    //   const updatedTokens = localFetchedTokens.map(async (token) => {
-    //     const image = await getTokenImage(token.symbol);
-    //     return { ...token, image };
-    //   });
-    //   const updatedTokensWithImages = await Promise.all(updatedTokens);
-    //   localFetchedTokens = updatedTokensWithImages;
-    // }
-
-    const [localTokensWithPrices, localEthPrice, localEthImage, localActivity] =
+    const [localTokensWithPrices, localEthPrice, localActivity] =
       await Promise.all([
-        getTokenPrices(localFetchedTokens2),
+        getTokenPrices(localFetchedTokens),
         getEthPrice(),
-        getTokenImage('ETH'),
         getActivity(address, 1),
       ]);
 
@@ -82,10 +65,9 @@ const Index: NextPage = () => {
         return activityItem;
       })
     );
-    setFetchedTokens(localFetchedTokens2);
+    setFetchedTokens(localFetchedTokens);
     setTokensWithPrices(localTokensWithPrices);
     setEthPrice(localEthPrice);
-    setEthImage(localEthImage);
     setActivity({
       ...activity,
       activityItems: activityItemsWithAssetTransfers,
@@ -138,7 +120,6 @@ const Index: NextPage = () => {
                   tokensInWallet={fetchedTokens}
                   tokensWithPrices={tokensWithPrices}
                   ethPrice={ethPrice}
-                  ethImage={ethImage}
                   fetching={fetching}
                 />
               </div>

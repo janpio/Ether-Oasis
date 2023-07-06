@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { ethers } from 'ethers';
+
 import coinGeckoData from '@/utils/CoinGeckoList.json';
 
 import type { AlchemyToken } from './types/tokenTypes';
 
-const ALCHEMY_API_KEY = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
+const ALCHEMY_MAINNET_NODE_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
 
 const tokensData = coinGeckoData.tokens;
 
@@ -31,11 +33,26 @@ const hexToDecimal = (hex: string): string => {
 
   return decimal;
 };
+const loadProvider = async () => {
+  const provider = new ethers.JsonRpcProvider(ALCHEMY_MAINNET_NODE_URL);
+  return provider;
+};
 
+export const getEthBalance = async (walletAddress: string) => {
+  try {
+    const ethersProvider = await loadProvider();
+    const balance = await ethersProvider.getBalance(walletAddress);
+    const etherString = Number(ethers.formatEther(balance)).toFixed(5);
+    return etherString;
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+};
 export const getAlchemyTokens = async (
   address: string
 ): Promise<AlchemyToken[]> => {
-  const url = ALCHEMY_API_KEY;
+  const url = ALCHEMY_MAINNET_NODE_URL;
   const options = {
     method: 'POST',
     headers: { accept: 'application/json', 'content-type': 'application/json' },
@@ -110,9 +127,22 @@ export const getAlchemyTokens = async (
     }
     return alchemyTokens;
   };
+  const tokensToReturn = await getBalancesFromAlchemy();
 
-  const getTokens2Return = await getBalancesFromAlchemy();
-  return getTokens2Return;
+  const ethBalance = await getEthBalance(address);
+  const etherHoldingsAsAlchemyToken = {
+    balance: ethBalance,
+    contractAddress: '',
+    decimals: 18,
+    logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880',
+    name: 'Ethereum',
+    symbol: 'ETH',
+    tokenBalance: ethBalance,
+  };
+
+  tokensToReturn.unshift(etherHoldingsAsAlchemyToken);
+
+  return tokensToReturn;
 };
 
 export const getEthPrice = async () => {
