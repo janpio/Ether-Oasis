@@ -27,9 +27,9 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
 
   return (
     <tr key={token.symbol} className="border-b border-gray-700 text-lg">
-      <td className="w-3/12 pt-1 text-left">
+      <td className="w-4/12 pt-1 text-left">
         <img
-          className={`mr-2 inline-block h-9 w-9 ${
+          className={`-mt-1 mr-2 inline-block h-8 w-8 ${
             token.symbol === 'ETH' ? '' : 'rounded-full'
           }`}
           src={token.logo}
@@ -44,7 +44,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
           : tokenPrice?.toFixed(3).replace(/\.?0+$/, '')}
       </td>
       <td className="w-3/12 text-left">{totalBalance.toFixed(5)}</td>
-      <td className="w-3/12 text-right">${formattedValue}</td>
+      <td className="w-2/12 text-right">${formattedValue}</td>
     </tr>
   );
 };

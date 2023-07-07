@@ -96,6 +96,29 @@ export const getEthBalance = async (
   }
 };
 
+export const getEthPrice = async () => {
+  try {
+    const params = new URLSearchParams({
+      ids: 'ethereum',
+      vs_currencies: 'usd',
+    }).toString();
+
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch token prices');
+    }
+
+    const data = await response.json();
+    return data.ethereum.usd;
+  } catch (error) {
+    console.error('Error fetching token prices:', error);
+    return 0;
+  }
+};
+
 export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
   const tokenIds = tokensInWallet.map((token) =>
     findIdBySymbol(token.symbol.toLowerCase())
@@ -140,47 +163,18 @@ export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
 export const getAlchemyTokens = async (
   address: string
 ): Promise<AlchemyToken[]> => {
-  const url = ALCHEMY_MAINNET_NODE_URL;
-  const options = {
-    method: 'POST',
-    headers: { accept: 'application/json', 'content-type': 'application/json' },
-    body: JSON.stringify({
-      id: 1,
-      jsonrpc: '2.0',
-      method: 'alchemy_getTokenBalances',
-      params: [address],
-    }),
-  };
+  const getBalancesFromAllNetworks = async (): Promise<AlchemyToken[]> => {
+    const allTokensAllNetworks: AlchemyToken[] = [];
 
-  const getBalancesFromAlchemy = async () => {
-    // fetching the token balances
-    const res = await fetch(url, options);
-    const response = await res.json();
+    for (const network of Object.keys(networkIdsAndNodesByName)) {
+      const networkData = networkIdsAndNodesByName[network];
 
-    // Getting balances from the response
-    const balances = response.result;
-
-    // Remove tokens with zero balance
-    const nonZeroBalances = await balances.tokenBalances.filter(
-      (token: { tokenBalance: string }) => {
-        const convertedBalance = hexToDecimal(token.tokenBalance);
-        return (
-          convertedBalance !== '0' &&
-          convertedBalance !== '0.0' &&
-          convertedBalance !== '0.00'
-        );
+      if (!networkData) {
+        throw new Error(`Invalid network: ${network}`);
       }
-    );
 
-    const alchemyTokens = [];
+      const url = networkData.nodeUrl;
 
-    // Loop through all tokens with non-zero balance
-    for (const token of nonZeroBalances) {
-      // Get balance of token
-      let balance = token.tokenBalance;
-
-      // request options for making a request to get tokenMetadata
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       const options = {
         method: 'POST',
         headers: {
@@ -188,34 +182,88 @@ export const getAlchemyTokens = async (
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          id: 1,
+          id: networkData.id,
           jsonrpc: '2.0',
-          method: 'alchemy_getTokenMetadata',
-          params: [token.contractAddress],
+          method: 'alchemy_getTokenBalances',
+          params: [address],
         }),
       };
 
-      // parsing the response and getting metadata from it
-      // eslint-disable-next-line no-await-in-loop
-      const res2 = await fetch(url, options);
-      // eslint-disable-next-line no-await-in-loop
-      let metadata = await res2.json();
-      metadata = metadata.result;
-      // console.log('metadata', metadata);
+      const getBalancesFromAlchemy = async () => {
+        // fetching the token balances
+        const res = await fetch(url, options);
+        const response = await res.json();
 
-      // Compute token balance in human-readable format
-      balance /= 10 ** metadata.decimals;
-      balance = balance.toFixed(5);
-      const combinedToken = { ...metadata, balance, ...token };
-      if (combinedToken.symbol.length < 8 && Number(balance) >= 0.01) {
-        alchemyTokens.push(combinedToken);
-      }
-      // Print name, balance, and symbol of token
-      // eslint-disable-next-line no-plusplus
+        // Getting balances from the response
+        const balances = response.result;
+
+        // Remove tokens with zero balance
+        const nonZeroBalances = balances.tokenBalances.filter(
+          (token: { tokenBalance: string }) => {
+            const convertedBalance = hexToDecimal(token.tokenBalance);
+            return (
+              convertedBalance !== '0' &&
+              convertedBalance !== '0.0' &&
+              convertedBalance !== '0.00'
+            );
+          }
+        );
+
+        const alchemyTokens: AlchemyToken[] = [];
+
+        // Loop through all tokens with non-zero balance
+        for (const token of nonZeroBalances) {
+          // Get balance of token
+          let balance = token.tokenBalance;
+
+          // request options for making a request to get tokenMetadata
+          const options2 = {
+            method: 'POST',
+            headers: {
+              accept: 'application/json',
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: networkData.id,
+              jsonrpc: '2.0',
+              method: 'alchemy_getTokenMetadata',
+              params: [token.contractAddress],
+            }),
+          };
+
+          // parsing the response and getting metadata from it
+          // eslint-disable-next-line no-await-in-loop
+          const res2 = await fetch(url, options2);
+          // eslint-disable-next-line no-await-in-loop
+          const metadata = await res2.json();
+
+          // Compute token balance in human-readable format
+          balance /= 10 ** metadata.result.decimals;
+          balance = balance.toFixed(5);
+          const combinedToken: AlchemyToken = {
+            ...metadata.result,
+            balance,
+            ...token,
+          };
+          if (combinedToken.symbol.length < 8 && Number(balance) >= 0.01) {
+            alchemyTokens.push(combinedToken);
+          }
+        }
+
+        return alchemyTokens;
+      };
+
+      // eslint-disable-next-line no-await-in-loop
+      const tokens = await getBalancesFromAlchemy();
+      allTokensAllNetworks.push(...tokens);
     }
-    return alchemyTokens;
+
+    return allTokensAllNetworks;
   };
-  const tokensToReturn = await getBalancesFromAlchemy();
+
+  const tokensToReturn = await getBalancesFromAllNetworks();
+
+  const ethPrice = await getEthPrice();
 
   const ethOptimismBalance = await getEthBalance(address, 'optimism');
   const etherOptimismHoldingsAsAlchemyToken = {
@@ -226,6 +274,7 @@ export const getAlchemyTokens = async (
     name: 'Ethereum',
     symbol: 'ETH',
     tokenBalance: ethOptimismBalance,
+    price: ethPrice,
   };
   tokensToReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
 
@@ -238,6 +287,7 @@ export const getAlchemyTokens = async (
     name: 'Ethereum',
     symbol: 'ETH',
     tokenBalance: ethArbitrumBalance,
+    price: ethPrice,
   };
 
   tokensToReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
@@ -251,42 +301,23 @@ export const getAlchemyTokens = async (
     name: 'Ethereum',
     symbol: 'ETH',
     tokenBalance: ethMainnetBalance,
+    price: ethPrice,
   };
 
   tokensToReturn.unshift(etherMainnetHoldingsAsAlchemyToken);
 
   const tokenPrices = await getTokenPrices(tokensToReturn);
 
-  const updatedReturn = tokensToReturn.map((token) => {
-    const price = tokenPrices[token.symbol.toLowerCase()];
-    const updatedToken = { ...token, price: price || null };
+  const updatedReturn: AlchemyToken[] = tokensToReturn.map((token) => {
+    const price: number | undefined = tokenPrices[token.symbol.toLowerCase()];
+    const updatedToken: AlchemyToken = {
+      ...token,
+      price: price !== undefined ? price : null,
+    };
     return updatedToken;
   });
 
   return updatedReturn;
-};
-
-export const getEthPrice = async () => {
-  try {
-    const params = new URLSearchParams({
-      ids: 'ethereum',
-      vs_currencies: 'usd',
-    }).toString();
-
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?${params}`
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch token prices');
-    }
-
-    const data = await response.json();
-    return data.ethereum.usd;
-  } catch (error) {
-    console.error('Error fetching token prices:', error);
-    return 0;
-  }
 };
 
 export const getTokenImage = async (tokenSymbol: string): Promise<string> => {

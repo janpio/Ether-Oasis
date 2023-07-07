@@ -8,8 +8,8 @@ export type Token = {
   totalBalance: string;
   image?: string;
 };
-
 export type AlchemyToken = {
+  price: number | null | undefined;
   balance: string;
   contractAddress?: string;
   decimals: number;
@@ -17,7 +17,6 @@ export type AlchemyToken = {
   name: string;
   symbol: string;
   tokenBalance: string;
-  price?: number;
 };
 
 export type ApiResponse = {
