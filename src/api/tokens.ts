@@ -8,6 +8,7 @@ import type { AlchemyToken } from './types/tokenTypes';
 
 const ALCHEMY_MAINNET_NODE_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
 const ALCHEMY_ARBITRUM_NODE_URL = `https://arb-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_ARBITRUM_API_KEY}`;
+const ALCHEMY_OPTIMISM_NODE_URL = `https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_OPTIMISM_API_KEY}`;
 
 const tokensData = coinGeckoData.tokens;
 
@@ -34,6 +35,10 @@ const networkIdsAndNodesByName: NetworkIdsAndNodesByName = {
   arbitrum: {
     id: 42161,
     nodeUrl: ALCHEMY_ARBITRUM_NODE_URL,
+  },
+  optimism: {
+    id: 10,
+    nodeUrl: ALCHEMY_OPTIMISM_NODE_URL,
   },
 };
 
@@ -211,6 +216,18 @@ export const getAlchemyTokens = async (
     return alchemyTokens;
   };
   const tokensToReturn = await getBalancesFromAlchemy();
+
+  const ethOptimismBalance = await getEthBalance(address, 'optimism');
+  const etherOptimismHoldingsAsAlchemyToken = {
+    balance: ethOptimismBalance,
+    contractAddress: '',
+    decimals: 18,
+    logo: ethImages.optimism,
+    name: 'Ethereum',
+    symbol: 'ETH',
+    tokenBalance: ethOptimismBalance,
+  };
+  tokensToReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
 
   const ethArbitrumBalance = await getEthBalance(address, 'arbitrum');
   const etherArbitrumHoldingsAsAlchemyToken = {
