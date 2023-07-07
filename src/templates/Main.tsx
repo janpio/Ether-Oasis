@@ -20,7 +20,7 @@ const Main = (props: IMainProps) => (
             <Link href="/" className="no-underline hover:no-underline">
               <img
                 src="/assets/images/ether-oasis-icon.png"
-                alt="Nextjs starter banner"
+                alt="Ether Oasis Logo"
                 className="logo no-underline hover:no-underline"
               />
             </Link>

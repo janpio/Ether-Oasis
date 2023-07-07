@@ -1,7 +1,8 @@
 import makeBlockie from 'ethereum-blockies-base64';
-import { useContext } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { format } from 'timeago.js';
 
+import { getTokenImage } from '@/api/tokens';
 import type { ActivityItem } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import { GlobalContext } from '@/context/GlobalContext';
@@ -10,8 +11,32 @@ type Props = {
   activityItem: ActivityItem;
 };
 
+type TokenImagesState = {
+  [tokenSymbol: string]: string;
+};
+
 const ActivitySingle = ({ activityItem }: Props) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
+  const [tokenImages, setTokenImages] = useState<TokenImagesState>({});
+
+  useMemo(() => {
+    const fetchTokenImages = async () => {
+      if (
+        activityItem.assetTransfers &&
+        activityItem.assetTransfers[0] !== defaultTransfer
+      ) {
+        const fetchedTokenImages: TokenImagesState = {};
+        await Promise.all(
+          activityItem.assetTransfers.map(async (transfer) => {
+            const tokenImage = await getTokenImage(transfer.asset);
+            fetchedTokenImages[transfer.asset] = tokenImage;
+          })
+        );
+        setTokenImages(fetchedTokenImages);
+      }
+    };
+    fetchTokenImages();
+  }, [activityItem]);
 
   return (
     <div className="mt-4 flex flex-col rounded border border-blue-300 p-3">
@@ -39,7 +64,16 @@ const ActivitySingle = ({ activityItem }: Props) => {
                 key={transfer.uniqueId}
                 className="mr-2 mt-2 flex flex-row items-start justify-start"
               >
-                <p className="rounded border border-gray-600 px-2 py-1">
+                <p className="rounded border border-gray-600 px-2 py-1 text-sm">
+                  <img
+                    src={
+                      tokenImages[transfer.asset]
+                        ? tokenImages[transfer.asset]
+                        : '/assets/images/default-token.png'
+                    }
+                    alt={transfer.asset}
+                    className="-mt-1 mr-2 inline-block h-5 w-5 rounded-full"
+                  />
                   {transfer.asset}: {transfer.value?.toFixed(2)}{' '}
                   <span>
                     {transfer.to.toLocaleLowerCase() ===
