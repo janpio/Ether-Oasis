@@ -7,8 +7,35 @@ import coinGeckoData from '@/utils/CoinGeckoList.json';
 import type { AlchemyToken } from './types/tokenTypes';
 
 const ALCHEMY_MAINNET_NODE_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
+const ALCHEMY_ARBITRUM_NODE_URL = `https://arb-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_ARBITRUM_API_KEY}`;
 
 const tokensData = coinGeckoData.tokens;
+
+const ethImages = {
+  mainnet: '/assets/images/eth-logos/eth-mainnet-image.png',
+  arbitrum: '/assets/images/eth-logos/eth-arbitrum-image.png',
+  optimism: '/assets/images/eth-logos/eth-optimism-image.png',
+};
+
+type NetworkIdAndNode = {
+  id: number;
+  nodeUrl: string;
+};
+
+type NetworkIdsAndNodesByName = {
+  [networkName: string]: NetworkIdAndNode;
+};
+
+const networkIdsAndNodesByName: NetworkIdsAndNodesByName = {
+  mainnet: {
+    id: 1,
+    nodeUrl: ALCHEMY_MAINNET_NODE_URL,
+  },
+  arbitrum: {
+    id: 42161,
+    nodeUrl: ALCHEMY_ARBITRUM_NODE_URL,
+  },
+};
 
 // const checkIfStartsWith0x = (str: string) => {
 //   return str.startsWith('0x');
@@ -34,14 +61,27 @@ const hexToDecimal = (hex: string): string => {
   return decimal;
 };
 
-const loadProvider = async () => {
-  const provider = new ethers.JsonRpcProvider(ALCHEMY_MAINNET_NODE_URL);
+const loadProvider = async (network: string) => {
+  const networkData = networkIdsAndNodesByName[network];
+
+  if (!networkData) {
+    throw new Error(`Invalid network: ${network}`);
+  }
+
+  const provider = new ethers.JsonRpcProvider(
+    networkData.nodeUrl,
+    networkData.id
+  );
+
   return provider;
 };
 
-export const getEthBalance = async (walletAddress: string) => {
+export const getEthBalance = async (
+  walletAddress: string,
+  network?: string
+) => {
   try {
-    const ethersProvider = await loadProvider();
+    const ethersProvider = await loadProvider(network || 'mainnet');
     const balance = await ethersProvider.getBalance(walletAddress);
     const etherString = Number(ethers.formatEther(balance)).toFixed(5);
     return etherString;
@@ -172,18 +212,31 @@ export const getAlchemyTokens = async (
   };
   const tokensToReturn = await getBalancesFromAlchemy();
 
-  const ethBalance = await getEthBalance(address);
-  const etherHoldingsAsAlchemyToken = {
-    balance: ethBalance,
+  const ethArbitrumBalance = await getEthBalance(address, 'arbitrum');
+  const etherArbitrumHoldingsAsAlchemyToken = {
+    balance: ethArbitrumBalance,
     contractAddress: '',
     decimals: 18,
-    logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880',
+    logo: ethImages.arbitrum,
     name: 'Ethereum',
     symbol: 'ETH',
-    tokenBalance: ethBalance,
+    tokenBalance: ethArbitrumBalance,
   };
 
-  tokensToReturn.unshift(etherHoldingsAsAlchemyToken);
+  tokensToReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
+
+  const ethMainnetBalance = await getEthBalance(address, 'mainnet');
+  const etherMainnetHoldingsAsAlchemyToken = {
+    balance: ethMainnetBalance,
+    contractAddress: '',
+    decimals: 18,
+    logo: ethImages.mainnet,
+    name: 'Ethereum',
+    symbol: 'ETH',
+    tokenBalance: ethMainnetBalance,
+  };
+
+  tokensToReturn.unshift(etherMainnetHoldingsAsAlchemyToken);
 
   const tokenPrices = await getTokenPrices(tokensToReturn);
 

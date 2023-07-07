@@ -26,10 +26,12 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
   }, [token, tokenPrice, totalBalance]);
 
   return (
-    <tr key={token.symbol} className="border-b border-gray-700">
-      <td className="w-3/12 text-left">
+    <tr key={token.symbol} className="border-b border-gray-700 text-lg">
+      <td className="w-3/12 pt-1 text-left">
         <img
-          className="-mt-1 mr-2 inline-block h-6 w-6 rounded-full"
+          className={`mr-2 inline-block h-9 w-9 ${
+            token.symbol === 'ETH' ? '' : 'rounded-full'
+          }`}
           src={token.logo}
           alt={token.symbol}
         />
