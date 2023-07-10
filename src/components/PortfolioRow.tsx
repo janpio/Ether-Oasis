@@ -12,16 +12,20 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
   const [formattedValue, setFormattedValue] = useState('');
 
   useMemo(() => {
-    if (tokenPrice && token) {
+    if (token) {
       setTotalBalance(Number(token.balance));
     }
   }, [tokenPrice, token]);
 
   useMemo(() => {
-    if (tokenPrice && totalBalance > 0) {
-      const value = tokenPrice * totalBalance;
+    if (totalBalance > 0) {
+      const value = tokenPrice ? tokenPrice * totalBalance : 0;
       const formatted = Number.isNaN(value) ? '-' : value.toFixed(2);
-      setFormattedValue(formatted);
+      if (formatted.length > 0) {
+        setFormattedValue(formatted);
+      } else {
+        setFormattedValue('-');
+      }
     }
   }, [token, tokenPrice, totalBalance]);
 

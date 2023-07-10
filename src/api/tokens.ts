@@ -201,6 +201,8 @@ export const getAlchemyTokens = async (
         const nonZeroBalances = balances.tokenBalances.filter(
           (token: { tokenBalance: string }) => {
             const convertedBalance = hexToDecimal(token.tokenBalance);
+            // console.log('convertedBalance:', convertedBalance);
+            // console.log('converted balance !== 0:', convertedBalance !== '0');
             return (
               convertedBalance !== '0' &&
               convertedBalance !== '0.0' &&
@@ -210,6 +212,7 @@ export const getAlchemyTokens = async (
         );
 
         const alchemyTokens: AlchemyToken[] = [];
+        console.log('nonZeroBalances:', nonZeroBalances);
 
         // Loop through all tokens with non-zero balance
         for (const token of nonZeroBalances) {
@@ -258,6 +261,8 @@ export const getAlchemyTokens = async (
       allTokensAllNetworks.push(...tokens);
     }
 
+    // console.log('allTokensAllNetworks:', allTokensAllNetworks);
+
     return allTokensAllNetworks;
   };
 
@@ -276,7 +281,13 @@ export const getAlchemyTokens = async (
     tokenBalance: ethOptimismBalance,
     price: ethPrice,
   };
-  tokensToReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
+
+  if (
+    etherOptimismHoldingsAsAlchemyToken.balance &&
+    Number(etherOptimismHoldingsAsAlchemyToken.balance) > 0
+  ) {
+    tokensToReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
+  }
 
   const ethArbitrumBalance = await getEthBalance(address, 'arbitrum');
   const etherArbitrumHoldingsAsAlchemyToken = {
@@ -290,7 +301,12 @@ export const getAlchemyTokens = async (
     price: ethPrice,
   };
 
-  tokensToReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
+  if (
+    etherArbitrumHoldingsAsAlchemyToken.balance &&
+    Number(etherArbitrumHoldingsAsAlchemyToken.balance) > 0
+  ) {
+    tokensToReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
+  }
 
   const ethMainnetBalance = await getEthBalance(address, 'mainnet');
   const etherMainnetHoldingsAsAlchemyToken = {
@@ -316,7 +332,7 @@ export const getAlchemyTokens = async (
     };
     return updatedToken;
   });
-
+  // console.log('updatedReturn:', updatedReturn);
   return updatedReturn;
 };
 
