@@ -16,6 +16,7 @@ import WalletButton from '@/components/WalletButton';
 import { GlobalContext } from '@/context/GlobalContext';
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
+import { truncateAddress } from '@/utils/truncateString';
 
 const Index: NextPage = () => {
   const { walletAddress, ensName } = useContext(GlobalContext);
@@ -35,7 +36,7 @@ const Index: NextPage = () => {
     if (ensName && ensName !== '') {
       setDisplayName(ensName);
     } else if (walletAddress && walletAddress !== '') {
-      setDisplayName(walletAddress);
+      setDisplayName(truncateAddress(walletAddress));
     } else if (walletAddress === '') {
       setDisplayName('');
     }

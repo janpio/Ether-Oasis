@@ -3,6 +3,7 @@
 import { ethers } from 'ethers';
 
 import coinGeckoData from '@/utils/CoinGeckoList.json';
+import { isTokenBlacklisted } from '@/utils/tokensBlacklist';
 
 import type { AlchemyToken } from './types/tokenTypes';
 
@@ -17,6 +18,8 @@ const ethImages = {
   arbitrum: '/assets/images/eth-logos/eth-arbitrum-image.png',
   optimism: '/assets/images/eth-logos/eth-optimism-image.png',
 };
+
+const defaultTokenImage = '/assets/images/default-token.png';
 
 type NetworkIdAndNode = {
   id: number;
@@ -198,24 +201,26 @@ export const getAlchemyTokens = async (
         const balances = response.result;
 
         // Remove tokens with zero balance
-        const nonZeroBalances = balances.tokenBalances.filter(
-          (token: { tokenBalance: string }) => {
+        const tokensToInclude = balances.tokenBalances.filter(
+          (token: { tokenBalance: string; contractAddress: string }) => {
             const convertedBalance = hexToDecimal(token.tokenBalance);
             // console.log('convertedBalance:', convertedBalance);
             // console.log('converted balance !== 0:', convertedBalance !== '0');
+            const isBlacklisted = isTokenBlacklisted(token.contractAddress);
             return (
               convertedBalance !== '0' &&
               convertedBalance !== '0.0' &&
-              convertedBalance !== '0.00'
+              convertedBalance !== '0.00' &&
+              !isBlacklisted
             );
           }
         );
 
         const alchemyTokens: AlchemyToken[] = [];
-        console.log('nonZeroBalances:', nonZeroBalances);
+        console.log('tokensToInclude:', tokensToInclude);
 
         // Loop through all tokens with non-zero balance
-        for (const token of nonZeroBalances) {
+        for (const token of tokensToInclude) {
           // Get balance of token
           let balance = token.tokenBalance;
 
@@ -328,6 +333,7 @@ export const getAlchemyTokens = async (
     const price: number | undefined = tokenPrices[token.symbol.toLowerCase()];
     const updatedToken: AlchemyToken = {
       ...token,
+      logo: token.logo || defaultTokenImage,
       price: price !== undefined ? price : null,
     };
     return updatedToken;

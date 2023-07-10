@@ -6,6 +6,7 @@ import { getTokenImage } from '@/api/tokens';
 import type { ActivityItem } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import { GlobalContext } from '@/context/GlobalContext';
+import { truncateAddress } from '@/utils/truncateString';
 
 type Props = {
   activityItem: ActivityItem;
@@ -50,7 +51,9 @@ const ActivitySingle = ({ activityItem }: Props) => {
         )}
         <div className="ml-4 flex flex-col items-start justify-start">
           <p className="text-lg font-bold">
-            {ensName && ensName !== '' ? ensName : walletAddress}
+            {ensName && ensName !== ''
+              ? ensName
+              : truncateAddress(walletAddress)}
           </p>
           <p>{format(activityItem.blockTimestamp)}</p>
         </div>
