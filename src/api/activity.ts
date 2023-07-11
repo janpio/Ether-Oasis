@@ -48,7 +48,7 @@ export const fetchContractABI = async (contractAddress: string) => {
   }
 };
 
-export const getContractInteraction = async (transaction: any) => {
+export const getContractInteraction = async (transaction: ActivityItem) => {
   // const isContractAddress = await checkIfContractAddress(transaction.toAddress);
 
   // if (!isContractAddress) {
@@ -86,11 +86,10 @@ export const getContractInteraction = async (transaction: any) => {
       value: receipt.value,
     })?.name;
 
-    console.log('method', method);
-
+    // console.log('method', method);
     return {
       contractAddress: transaction.toAddress,
-      // method,
+      method,
     };
   }
   return null;
@@ -114,14 +113,13 @@ export const getActivity = async (
       {
         address: walletAddress,
         page: localPageNumber,
-        perPage: 10,
+        perPage: 5,
       },
     ]
   );
 
   await Promise.all(
     response.paginatedItems.map(async (item) => {
-      // const isContractAddress = await checkIfContractAddress(item.toAddress);
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,
         blockTimestamp: item.blockTimestamp,
@@ -133,10 +131,20 @@ export const getActivity = async (
         value: item.value,
       };
 
-      const contractInteraction = await getContractInteraction(item);
-      console.log('activity item receipt', contractInteraction);
+      const contractInteraction = await getContractInteraction(activityItem);
+      if (contractInteraction) {
+        activityItem.contractInteraction = contractInteraction.method;
+      }
+      // console.log('activity item receipt', contractInteraction);
       activityItems.push(activityItem);
     })
+  );
+
+  // Sort activityItems by blockTimestamp in descending order
+  activityItems.sort(
+    (a, b) =>
+      new Date(b.blockTimestamp).getTime() -
+      new Date(a.blockTimestamp).getTime()
   );
 
   localPageNumber += 1;

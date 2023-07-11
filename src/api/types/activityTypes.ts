@@ -8,6 +8,7 @@ export type ActivityItem = {
   transactionIndex: number;
   value: string;
   assetTransfers?: Transfer[];
+  contractInteraction?: string;
 };
 
 export type ApiResponse = {

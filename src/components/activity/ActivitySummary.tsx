@@ -32,8 +32,8 @@ const ActivitySummary = ({
   }, [activity]);
 
   useEffect(() => {
-    if (!allActivity && activityItems.length > 12) {
-      setActivityItems(activityItems.slice(0, 12));
+    if (!allActivity && activityItems.length > 8) {
+      setActivityItems(activityItems.slice(0, 8));
     }
   }, [allActivity, activityItems]);
 

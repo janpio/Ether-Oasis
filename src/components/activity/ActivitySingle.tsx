@@ -58,7 +58,12 @@ const ActivitySingle = ({ activityItem }: Props) => {
           <p>{format(activityItem.blockTimestamp)}</p>
         </div>
       </div>
-      <p className="mt-2">did something with: {activityItem.toAddress}</p>
+      <p className="mt-2">
+        did something{' '}
+        {activityItem.contractInteraction &&
+          `(${activityItem.contractInteraction}) `}
+        with: {activityItem.toAddress}
+      </p>
       {activityItem.assetTransfers &&
         activityItem.assetTransfers[0] !== defaultTransfer && (
           <div className="flex flex-row items-start justify-start">
