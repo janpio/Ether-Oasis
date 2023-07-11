@@ -3,13 +3,10 @@
 import { ethers } from 'ethers';
 
 import coinGeckoData from '@/utils/CoinGeckoList.json';
+import { loadProvider, networkIdsAndNodesByName } from '@/utils/providers';
 import { isTokenBlacklisted } from '@/utils/tokensBlacklist';
 
 import type { AlchemyToken } from './types/tokenTypes';
-
-const ALCHEMY_MAINNET_NODE_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
-const ALCHEMY_ARBITRUM_NODE_URL = `https://arb-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_ARBITRUM_API_KEY}`;
-const ALCHEMY_OPTIMISM_NODE_URL = `https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_OPTIMISM_API_KEY}`;
 
 const tokensData = coinGeckoData.tokens;
 
@@ -20,30 +17,6 @@ const ethImages = {
 };
 
 const defaultTokenImage = '/assets/images/default-token.png';
-
-type NetworkIdAndNode = {
-  id: number;
-  nodeUrl: string;
-};
-
-type NetworkIdsAndNodesByName = {
-  [networkName: string]: NetworkIdAndNode;
-};
-
-const networkIdsAndNodesByName: NetworkIdsAndNodesByName = {
-  mainnet: {
-    id: 1,
-    nodeUrl: ALCHEMY_MAINNET_NODE_URL,
-  },
-  arbitrum: {
-    id: 42161,
-    nodeUrl: ALCHEMY_ARBITRUM_NODE_URL,
-  },
-  optimism: {
-    id: 10,
-    nodeUrl: ALCHEMY_OPTIMISM_NODE_URL,
-  },
-};
 
 // const checkIfStartsWith0x = (str: string) => {
 //   return str.startsWith('0x');
@@ -67,21 +40,6 @@ const hexToDecimal = (hex: string): string => {
   const decimal = BigInt(value).toString();
 
   return decimal;
-};
-
-const loadProvider = async (network: string) => {
-  const networkData = networkIdsAndNodesByName[network];
-
-  if (!networkData) {
-    throw new Error(`Invalid network: ${network}`);
-  }
-
-  const provider = new ethers.JsonRpcProvider(
-    networkData.nodeUrl,
-    networkData.id
-  );
-
-  return provider;
 };
 
 export const getEthBalance = async (
@@ -217,7 +175,6 @@ export const getAlchemyTokens = async (
         );
 
         const alchemyTokens: AlchemyToken[] = [];
-        console.log('tokensToInclude:', tokensToInclude);
 
         // Loop through all tokens with non-zero balance
         for (const token of tokensToInclude) {

@@ -10,7 +10,7 @@ const Card: React.FC<CardProps> = ({ title, content, centerContent }) => {
   return (
     <div className="mt-4 w-full overflow-hidden rounded border-2 border-blue-200 bg-gray-800">
       <div
-        className={`px-6 py-4 ${
+        className={`px-3 py-4 ${
           centerContent && 'flex flex-col items-center justify-center'
         }`}
       >

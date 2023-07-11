@@ -2,13 +2,13 @@
 /* eslint-disable no-console */
 import { ethers } from 'ethers';
 
+import { loadProvider } from '@/utils/providers';
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
 import type {
   ActivityItem,
   ActivityResponse,
   ApiResponse,
-  Transaction,
   TransactionHashes,
   Transfer,
   TransferResponseObject,
@@ -18,9 +18,82 @@ import { defaultTransfer } from './types/activityTypes';
 const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY;
 
-const checkIfContractAddress = async (address: string) => {
-  const code = await quickNodeProvider.getCode(address);
-  return code !== '0x';
+// const checkIfContractAddress = async (address: string) => {
+//   const code = await quickNodeProvider.getCode(address);
+//   return code !== '0x';
+// };
+
+export const fetchContractABI = async (contractAddress: string) => {
+  try {
+    const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === '1') {
+        const { result } = data;
+        const abi = JSON.parse(result);
+        return abi;
+      }
+    }
+
+    // throw new Error('Failed to fetch ABI.');
+    return 0;
+  } catch (error) {
+    console.error(
+      `Failed to fetch ABI for contract at address ${contractAddress}:`,
+      error
+    );
+    throw error;
+  }
+};
+
+export const getContractInteraction = async (transaction: any) => {
+  // const isContractAddress = await checkIfContractAddress(transaction.toAddress);
+
+  // if (!isContractAddress) {
+  //   return null;
+  // }
+
+  const provider = await loadProvider('mainnet');
+
+  const receipt = await provider.getTransaction(transaction.transactionHash);
+
+  const contractABI = await fetchContractABI(transaction.toAddress);
+
+  if (!contractABI || contractABI === 0) {
+    console.log('no contract abi');
+    return null;
+  }
+
+  if (transaction.toAddress && contractABI) {
+    const contract = new ethers.Contract(
+      transaction.toAddress,
+      contractABI,
+      quickNodeProvider
+    );
+
+    if (!contract.interface) {
+      throw new Error('Contract interface not found.');
+    }
+
+    if (!receipt?.data) {
+      return null;
+    }
+
+    const method = contract.interface.parseTransaction({
+      data: receipt.data,
+      value: receipt.value,
+    })?.name;
+
+    console.log('method', method);
+
+    return {
+      contractAddress: transaction.toAddress,
+      // method,
+    };
+  }
+  return null;
 };
 
 export const getActivity = async (
@@ -41,7 +114,7 @@ export const getActivity = async (
       {
         address: walletAddress,
         page: localPageNumber,
-        perPage: 18,
+        perPage: 3,
       },
     ]
   );
@@ -49,7 +122,6 @@ export const getActivity = async (
   await Promise.all(
     response.paginatedItems.map(async (item) => {
       // const isContractAddress = await checkIfContractAddress(item.toAddress);
-
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,
         blockTimestamp: item.blockTimestamp,
@@ -61,6 +133,8 @@ export const getActivity = async (
         value: item.value,
       };
 
+      const contractInteraction = await getContractInteraction(item);
+      console.log('activity item receipt', contractInteraction);
       activityItems.push(activityItem);
     })
   );
@@ -82,64 +156,6 @@ export const fetchTransactionDetails = async (
   );
   const transactions = await Promise.all(transactionPromises);
   return transactions;
-};
-
-export const fetchContractABI = async (contractAddress: string) => {
-  try {
-    const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
-    const response = await fetch(url);
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === '1') {
-        const { result } = data;
-        const abi = JSON.parse(result);
-        return abi;
-      }
-    }
-
-    throw new Error('Failed to fetch ABI.');
-  } catch (error) {
-    console.error(
-      `Failed to fetch ABI for contract at address ${contractAddress}:`,
-      error
-    );
-    throw error;
-  }
-};
-
-export const getContractInteraction = async (transaction: Transaction) => {
-  const isContractAddress = await checkIfContractAddress(transaction.to);
-
-  if (!isContractAddress) {
-    return null;
-  }
-
-  const contractABI = await fetchContractABI(transaction.to);
-
-  if (transaction.to) {
-    const contract = new ethers.Contract(
-      transaction.to,
-      contractABI,
-      quickNodeProvider
-    );
-
-    if (!contract.interface) {
-      throw new Error('Contract interface not found.');
-    }
-
-    const method = contract.interface.parseTransaction({
-      data: transaction.data,
-    })?.name;
-
-    console.log('method', method);
-
-    return {
-      contractAddress: transaction.to,
-      method,
-    };
-  }
-  return null;
 };
 
 export const getAssetTransfers = async (

@@ -104,10 +104,10 @@ const Portfolio = ({ tokensInWallet, ethPrice, fetching }: PortfolioProps) => {
       <table className="portfolio-table mt-2 table-fixed">
         <thead>
           <tr>
-            <th className="w-2/12 text-left text-xl">Token</th>
+            <th className="w-4/12 text-left text-xl">Token</th>
             <th className="w-3/12 text-left text-xl">Price</th>
             <th className="w-4/12 text-left text-xl">Balance</th>
-            <th className="w-3/12 text-right text-xl">Value</th>
+            <th className="w-2/12 text-right text-xl">Value</th>
           </tr>
         </thead>
         <tbody className="text-lg">
