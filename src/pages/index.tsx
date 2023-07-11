@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+import type { ethers } from 'ethers';
 import type { NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
@@ -16,10 +17,11 @@ import WalletButton from '@/components/WalletButton';
 import { GlobalContext } from '@/context/GlobalContext';
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
+import { fetchEns } from '@/utils/fetchEns';
 import { truncateAddress } from '@/utils/truncateString';
 
 const Index: NextPage = () => {
-  const { walletAddress, ensName } = useContext(GlobalContext);
+  const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
   const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
   const [ethPrice, setEthPrice] = useState(0);
@@ -31,6 +33,15 @@ const Index: NextPage = () => {
     pageNumber: 1,
   });
   const [fetching, setFetching] = useState(false);
+  const [addressToImpersonate, setAddressToImpersonate] = useState('');
+
+  const handleUpdate = (
+    walletAddr: string,
+    ens: string,
+    provider: ethers.BrowserProvider | ethers.JsonRpcProvider | null
+  ) => {
+    updateVariables(walletAddr, ens, provider);
+  };
 
   useEffect(() => {
     if (ensName && ensName !== '') {
@@ -40,7 +51,7 @@ const Index: NextPage = () => {
     } else if (walletAddress === '') {
       setDisplayName('');
     }
-  }, [walletAddress, ensName]);
+  }, [walletAddress, ensName, addressToImpersonate]);
 
   const fetchPageData = async (address: string) => {
     console.log('fetching page data');
@@ -86,14 +97,43 @@ const Index: NextPage = () => {
         meta={<Meta title="Ether Oasis" description="Trade, Track, Hang." />}
       >
         <NameTag />
-        <div className="flex flex-row">
+        <div className="flex w-full flex-row">
           <div className="mr-2 flex w-full flex-col items-start justify-start">
             <Card
               title="No Wallet Connected"
               content={
-                <div className="flex flex-col items-center justify-center">
-                  <p className="mb-4 mt-2">Connect your wallet to continue.</p>
+                <div className="flex w-full flex-col items-center justify-center">
+                  <p className="mb-4 mt-2 text-xl">
+                    Connect your wallet to continue.
+                  </p>
                   <WalletButton />
+                  <p className="mt-4 text-xl">
+                    Or, enter a wallet address to impersonate:
+                  </p>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      console.log('display name', addressToImpersonate);
+                      const ens = await fetchEns(addressToImpersonate);
+                      handleUpdate(addressToImpersonate, ens, null);
+                    }}
+                    className="mt-4 flex w-full flex-row items-center justify-center"
+                  >
+                    <input
+                      className="mr-1 h-10 w-3/6 appearance-none rounded border border-blue-300 bg-blue-100 px-3 py-2 leading-tight text-gray-800 shadow"
+                      type="text"
+                      placeholder="0x..."
+                      onChange={(e) => {
+                        setAddressToImpersonate(e.target.value);
+                      }}
+                    />
+                    <button
+                      className="wallet-button h-10 rounded border border-blue-200 bg-blue-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-800 hover:text-blue-200"
+                      type="submit"
+                    >
+                      Impersonate
+                    </button>
+                  </form>
                 </div>
               }
               centerContent

@@ -11,6 +11,7 @@ import Cookies from 'js-cookie';
 import { useContext, useEffect, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
+import { fetchEns } from '@/utils/fetchEns';
 import { truncateString } from '@/utils/truncateString';
 
 const MAINNET_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY}`;
@@ -62,23 +63,6 @@ const WalletButton = () => {
     provider: ethers.BrowserProvider | ethers.JsonRpcProvider | null
   ) => {
     updateVariables(walletAddr, ens, provider);
-  };
-
-  const fetchEns = async (
-    address: string,
-    provider: ethers.BrowserProvider | ethers.JsonRpcProvider
-  ) => {
-    if (address && provider) {
-      const localEnsName = await provider.lookupAddress(address);
-      if (localEnsName) {
-        const truncatedEns =
-          localEnsName.substring(0, localEnsName.indexOf('.')).slice(0, 20) +
-          localEnsName.substring(localEnsName.indexOf('.'));
-        return truncatedEns;
-      }
-      return '';
-    }
-    return '';
   };
 
   const coinbaseWalletSdk = coinbaseWalletModule({ darkMode: true });

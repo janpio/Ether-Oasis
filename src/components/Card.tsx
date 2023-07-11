@@ -11,11 +11,11 @@ const Card: React.FC<CardProps> = ({ title, content, centerContent }) => {
     <div className="mt-4 w-full overflow-hidden rounded border-2 border-blue-200 bg-gray-800">
       <div
         className={`px-3 py-4 ${
-          centerContent && 'flex flex-col items-center justify-center'
+          centerContent && 'flex w-full flex-col items-center justify-center'
         }`}
       >
         <div className="text-2xl font-bold">{title}</div>
-        <div className="text-base text-gray-700">{content}</div>
+        <div className="w-full text-base text-gray-700">{content}</div>
       </div>
     </div>
   );

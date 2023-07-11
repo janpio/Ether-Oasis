@@ -239,7 +239,7 @@ export const getAlchemyTokens = async (
     decimals: 18,
     logo: ethImages.optimism,
     name: 'Ethereum',
-    symbol: 'ETH',
+    symbol: 'opETH',
     tokenBalance: ethOptimismBalance,
     price: ethPrice,
   };
@@ -258,7 +258,7 @@ export const getAlchemyTokens = async (
     decimals: 18,
     logo: ethImages.arbitrum,
     name: 'Ethereum',
-    symbol: 'ETH',
+    symbol: 'arbETH',
     tokenBalance: ethArbitrumBalance,
     price: ethPrice,
   };
@@ -308,7 +308,9 @@ export const getTokenImage = async (tokenSymbol: string): Promise<string> => {
 
     if (response.ok) {
       const data = await response.json();
-      return data.image.small;
+      if (data?.image) {
+        return data.image.small;
+      }
     }
     if (!response.ok) {
       console.error('Error fetching token image:', response.status);

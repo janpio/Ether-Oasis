@@ -114,7 +114,7 @@ export const getActivity = async (
       {
         address: walletAddress,
         page: localPageNumber,
-        perPage: 3,
+        perPage: 10,
       },
     ]
   );
