@@ -1,5 +1,3 @@
-// TODO: refactor to add pagination at bottom when allActivity is true, receive page from url params
-/* eslint-disable import/no-extraneous-dependencies */
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
@@ -38,7 +36,20 @@ const ActivitySummary = ({
   }, [allActivity, activityItems]);
 
   const getPageNumbers = (allPages: number) => {
-    return Array.from({ length: allPages }, (_, index) => index + 1);
+    const currentPage = pageNumber || 1;
+    let startPage = Math.max(currentPage - 5, 1);
+    const endPage = Math.min(startPage + 9, allPages);
+
+    if (endPage - startPage < 9) {
+      startPage = Math.max(endPage - 9, 1);
+    }
+
+    const pages = Array.from(
+      { length: endPage - startPage + 1 },
+      (_, index) => startPage + index
+    );
+
+    return pages;
   };
 
   if (fetching) {
@@ -96,6 +107,20 @@ const ActivitySummary = ({
                     </Link>
                   </li>
                 ))}
+                {totalPages > 10 && pageNumber !== totalPages && (
+                  <li className="mx-1">...</li>
+                )}
+                {totalPages > 10 && pageNumber !== totalPages && (
+                  <li key={pageNumber} className="mx-1">
+                    <Link
+                      href="/activity/[page]"
+                      as={`/activity/${totalPages}`}
+                      className="rounded border border-blue-200 bg-blue-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-800 hover:text-blue-200"
+                    >
+                      {totalPages}
+                    </Link>
+                  </li>
+                )}
               </ul>
 
               {/* Render the next button */}
@@ -106,6 +131,14 @@ const ActivitySummary = ({
                   className="next-or-prev ml-1 rounded border border-blue-200 bg-blue-200 px-4 font-semibold text-gray-800 hover:bg-gray-800 hover:text-blue-200"
                 >
                   Next
+                </Link>
+              )}
+              {pageNumber === totalPages && (
+                <Link
+                  href="/activity/1"
+                  className="next-or-prev ml-1 rounded border border-blue-200 bg-blue-200 px-4 font-semibold text-gray-800 hover:bg-gray-800 hover:text-blue-200"
+                >
+                  First
                 </Link>
               )}
             </div>
