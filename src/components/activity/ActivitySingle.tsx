@@ -1,4 +1,6 @@
 import makeBlockie from 'ethereum-blockies-base64';
+import { ethers } from 'ethers';
+import type { ReactElement } from 'react';
 import { useContext, useMemo, useState } from 'react';
 import { format } from 'timeago.js';
 
@@ -6,6 +8,7 @@ import { getTokenImage } from '@/api/tokens';
 import type { ActivityItem } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
 import { GlobalContext } from '@/context/GlobalContext';
+import { contractNamesByAddress } from '@/data/contractsAndNames';
 import { truncateAddress } from '@/utils/truncateString';
 
 type Props = {
@@ -39,6 +42,71 @@ const ActivitySingle = ({ activityItem }: Props) => {
     fetchTokenImages();
   }, [activityItem]);
 
+  // takes the ActivityItem object and returns a string or ReactElement
+  const activityInterpreter = (item: ActivityItem) => {
+    // uses item.contractAddress to lookup the contractType and contractName
+    const contractType = contractNamesByAddress[item.toAddress]?.type;
+    const contractName = contractNamesByAddress[item.toAddress]?.name
+      ? contractNamesByAddress[item.toAddress]?.name
+      : item.toAddress;
+    const interactionValue = item.value === '0' ? null : item.value;
+    /* 
+      using above info plus the contract method (item.contractInteraction)
+      action is reassigned to form a readable sentence describing the activity
+    */
+    let action: ReactElement | string = '';
+
+    if (
+      !item.contractInteraction &&
+      contractType === 'Bridge' &&
+      interactionValue
+    ) {
+      action = (
+        <>
+          Bridged {Number(ethers.formatEther(interactionValue)).toFixed(6)} ETH
+          via: <br /> {contractName}
+        </>
+      );
+      return action;
+    }
+
+    if (item.contractInteraction === 'withdraw') {
+      action = (
+        <>
+          Withdrew from:
+          <br /> {contractName}
+        </>
+      );
+      return action;
+    }
+
+    if (item.contractInteraction === 'getReward') {
+      action = (
+        <>
+          Claimed rewards from:
+          <br /> {contractName}
+        </>
+      );
+      return action;
+    }
+
+    if (contractType === 'Token' && item.contractInteraction === 'approve') {
+      action = <>Approved {contractName} to be used</>;
+      return action;
+    }
+
+    if (item.contractInteraction) {
+      action = `did something (${item.contractInteraction}) with: ${contractName}`;
+      return action;
+    }
+
+    if (!item.contractInteraction && contractType !== 'Bridge') {
+      action = `did something with: ${contractName}`;
+      return action;
+    }
+    return action;
+  };
+
   return (
     <div className="mt-4 flex flex-col rounded border border-blue-300 p-3">
       <div className="flex w-full flex-row items-center">
@@ -58,12 +126,7 @@ const ActivitySingle = ({ activityItem }: Props) => {
           <p>{format(activityItem.blockTimestamp)}</p>
         </div>
       </div>
-      <p className="mt-2">
-        did something{' '}
-        {activityItem.contractInteraction &&
-          `(${activityItem.contractInteraction}) `}
-        with: {activityItem.toAddress}
-      </p>
+      <p className="mt-2">{activityInterpreter(activityItem)}</p>
       {activityItem.assetTransfers &&
         activityItem.assetTransfers[0] !== defaultTransfer && (
           <div className="flex flex-row items-start justify-start">
