@@ -17,6 +17,7 @@ const Portfolio = ({ tokensInWallet, ethPrice, fetching }: PortfolioProps) => {
   const [totalValue, setTotalValue] = useState(0);
 
   useMemo(() => {
+    console.log('tokens in wallet', tokensInWallet);
     const calculateTotalValue = () => {
       const tokenValue = tokensInWallet.reduce(
         (total, token) => total + (token.price ?? 0) * Number(token.balance),

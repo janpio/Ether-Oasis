@@ -124,6 +124,7 @@ export const getTokenPrices = async (tokensInWallet: AlchemyToken[]) => {
 export const getAlchemyTokens = async (
   address: string
 ): Promise<AlchemyToken[]> => {
+  const ethPrice = await getEthPrice();
   const getBalancesFromAllNetworks = async (): Promise<AlchemyToken[]> => {
     const allTokensAllNetworks: AlchemyToken[] = [];
 
@@ -230,7 +231,17 @@ export const getAlchemyTokens = async (
 
   const tokensToReturn = await getBalancesFromAllNetworks();
 
-  const ethPrice = await getEthPrice();
+  const tokenPrices = await getTokenPrices(tokensToReturn);
+
+  const updatedReturn: AlchemyToken[] = tokensToReturn.map((token) => {
+    const price: number | undefined = tokenPrices[token.symbol.toLowerCase()];
+    const updatedToken: AlchemyToken = {
+      ...token,
+      logo: token.logo || defaultTokenImage,
+      price: price !== undefined ? price : null,
+    };
+    return updatedToken;
+  });
 
   const ethOptimismBalance = await getEthBalance(address, 'optimism');
   const etherOptimismHoldingsAsAlchemyToken = {
@@ -248,7 +259,7 @@ export const getAlchemyTokens = async (
     etherOptimismHoldingsAsAlchemyToken.balance &&
     Number(etherOptimismHoldingsAsAlchemyToken.balance) > 0
   ) {
-    tokensToReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
+    updatedReturn.unshift(etherOptimismHoldingsAsAlchemyToken);
   }
 
   const ethArbitrumBalance = await getEthBalance(address, 'arbitrum');
@@ -267,7 +278,7 @@ export const getAlchemyTokens = async (
     etherArbitrumHoldingsAsAlchemyToken.balance &&
     Number(etherArbitrumHoldingsAsAlchemyToken.balance) > 0
   ) {
-    tokensToReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
+    updatedReturn.unshift(etherArbitrumHoldingsAsAlchemyToken);
   }
 
   const ethMainnetBalance = await getEthBalance(address, 'mainnet');
@@ -282,19 +293,7 @@ export const getAlchemyTokens = async (
     price: ethPrice,
   };
 
-  tokensToReturn.unshift(etherMainnetHoldingsAsAlchemyToken);
-
-  const tokenPrices = await getTokenPrices(tokensToReturn);
-
-  const updatedReturn: AlchemyToken[] = tokensToReturn.map((token) => {
-    const price: number | undefined = tokenPrices[token.symbol.toLowerCase()];
-    const updatedToken: AlchemyToken = {
-      ...token,
-      logo: token.logo || defaultTokenImage,
-      price: price !== undefined ? price : null,
-    };
-    return updatedToken;
-  });
+  updatedReturn.unshift(etherMainnetHoldingsAsAlchemyToken);
   // console.log('updatedReturn:', updatedReturn);
   return updatedReturn;
 };
