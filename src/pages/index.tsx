@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import type { ethers } from 'ethers';
-import type { NextPage } from 'next';
+import type { GetStaticProps, NextPage } from 'next';
 import { useContext, useEffect, useState } from 'react';
 
 import { getActivity, getAssetTransfers } from '@/api/activity';
@@ -20,7 +20,13 @@ import { Main } from '@/templates/Main';
 import { fetchEns } from '@/utils/fetchEns';
 import { truncateAddress } from '@/utils/truncateString';
 
-const Index: NextPage = () => {
+import prisma from '../../lib/prisma';
+
+type Props = {
+  users: any[];
+};
+
+const Index: NextPage<Props> = ({ users }: Props) => {
   const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
   const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
@@ -42,6 +48,12 @@ const Index: NextPage = () => {
   ) => {
     updateVariables(walletAddr, ens, provider);
   };
+
+  useEffect(() => {
+    if (users) {
+      console.log('users', users);
+    }
+  }, [users]);
 
   useEffect(() => {
     if (ensName && ensName !== '') {
@@ -183,3 +195,15 @@ const Index: NextPage = () => {
 };
 
 export default Index;
+
+export const getStaticProps: GetStaticProps = async () => {
+  const users = await prisma.user.findMany({
+    where: { walletAddress: { not: null } },
+  });
+  return {
+    props: {
+      users: JSON.parse(JSON.stringify(users)),
+    },
+    revalidate: 10,
+  };
+};
