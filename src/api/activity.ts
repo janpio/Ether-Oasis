@@ -2,6 +2,8 @@
 /* eslint-disable no-console */
 import { ethers } from 'ethers';
 
+import { contractNamesByAddress } from '@/data/contractsAndNames';
+import { parse0xSwap } from '@/utils/parse0xSwap';
 import { loadProvider } from '@/utils/providers';
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
@@ -119,8 +121,6 @@ export const getActivity = async (
     ]
   );
 
-  console.log('response', response);
-
   await Promise.all(
     response.paginatedItems.map(async (item) => {
       const options = {
@@ -143,6 +143,14 @@ export const getActivity = async (
       );
       const res: TransactionResponse = await txReceipt.json();
       const transactionReceipt = res.result;
+      const contractName = contractNamesByAddress[item.toAddress]?.name
+        ? contractNamesByAddress[item.toAddress]?.name
+        : item.toAddress;
+      const contractType = contractNamesByAddress[item.toAddress]?.type;
+      const swapData =
+        contractName === '0x Exchange'
+          ? await parse0xSwap(item.transactionHash)
+          : null;
 
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,
@@ -154,6 +162,9 @@ export const getActivity = async (
         transactionIndex: item.transactionIndex,
         value: item.value,
         transactionReceipt: transactionReceipt || undefined,
+        contractName: contractName || undefined,
+        contractType: contractType || undefined,
+        swapData: swapData || undefined,
       };
 
       const contractInteraction = await getContractInteraction(activityItem);

@@ -278,12 +278,36 @@ export const contractNamesByAddress: ContractNameAndAddress = {
     name: 'Uniswap Universal Router',
     type: 'DEX',
   },
+  '0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b': {
+    name: 'Uniswap Old Universal Router',
+    type: 'DEX',
+  },
+  '0xdef1c0ded9bec7f1a1670819833240f027b25eff': {
+    name: '0x Exchange',
+    type: 'DEX',
+  },
+  '0x000000000022d473030f116ddee9f6b43ac78ba3': {
+    name: 'Uniswap',
+    type: 'DEX',
+  },
+  '0xc92e8bdf79f0507f65a392b0ab4667716bfe0110': {
+    name: 'CowSwap',
+    type: 'DEX',
+  },
+  '0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f': {
+    name: 'SushiSwap',
+    type: 'DEX',
+  },
   '0xcf50b810e57ac33b91dcf525c6ddd9881b139332': {
     name: 'Convex CVX Rewards Pool',
     type: 'Defi',
   },
   '0x0a760466e1b4621579a82a39cb56dda2f4e70f03': {
     name: 'Convex stEth Rewards Pool',
+    type: 'Defi',
+  },
+  '0xc21d353ff4ee73c572425697f4f5aad2109fe35b': {
+    name: 'Alchemix',
     type: 'Defi',
   },
   '0x3fe65692bfcd0e6cf84cb1e7d24108e434a7587e': {

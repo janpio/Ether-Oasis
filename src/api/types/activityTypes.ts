@@ -27,6 +27,17 @@ export type TransactionReceipt = {
   type: string;
 };
 
+type SwapToken = {
+  address: string;
+  amount: string;
+  symbol: string;
+};
+
+type Swap = {
+  tokenIn: SwapToken;
+  tokenOut: SwapToken;
+};
+
 export type ActivityItem = {
   blockNumber: string;
   blockTimestamp: string;
@@ -39,6 +50,9 @@ export type ActivityItem = {
   assetTransfers?: Transfer[];
   contractInteraction?: string;
   transactionReceipt?: TransactionReceipt;
+  contractName?: string;
+  contractType?: string;
+  swapData?: Swap;
 };
 
 export type ApiResponse = {
