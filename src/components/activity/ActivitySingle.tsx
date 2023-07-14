@@ -173,36 +173,56 @@ const ActivitySingle = ({ activityItem }: Props) => {
         </div>
       </div>
       <p className="mt-2">{activityInterpreter(activityItem)}</p>
-      {activityItem.assetTransfers &&
-        activityItem.assetTransfers[0] !== defaultTransfer && (
-          <div className="flex flex-row items-start justify-start">
-            {activityItem.assetTransfers.map((transfer) => (
-              <div
-                key={transfer.uniqueId}
-                className="mr-2 mt-2 flex flex-row items-start justify-start"
-              >
-                <p className="rounded border border-gray-600 px-2 py-1 text-sm">
-                  <img
-                    src={
-                      tokenImages[transfer.asset]
-                        ? tokenImages[transfer.asset]
-                        : '/assets/images/default-token.png'
-                    }
-                    alt={transfer.asset}
-                    className="-mt-1 mr-2 inline-block h-5 w-5 rounded-full"
-                  />
-                  {transfer.asset}: {transfer.value?.toFixed(2)}{' '}
-                  <span>
-                    {transfer.to.toLocaleLowerCase() ===
-                    walletAddress?.toLocaleLowerCase()
-                      ? 'IN'
-                      : 'OUT'}
-                  </span>
-                </p>
-              </div>
-            ))}
+      <div className="flex flex-row items-start justify-start">
+        {activityItem.assetTransfers &&
+          activityItem.assetTransfers[0] !== defaultTransfer && (
+            <div className="flex flex-row items-start justify-start">
+              {activityItem.assetTransfers.map((transfer) => (
+                <div
+                  key={transfer.uniqueId}
+                  className="mr-2 mt-2 flex flex-row items-start justify-start"
+                >
+                  <p className="rounded border border-gray-600 px-2 py-1 text-sm">
+                    <img
+                      src={
+                        tokenImages[transfer.asset]
+                          ? tokenImages[transfer.asset]
+                          : '/assets/images/default-token.png'
+                      }
+                      alt={transfer.asset}
+                      className="-mt-1 mr-2 inline-block h-5 w-5 rounded-full"
+                    />
+                    {transfer.asset}: {transfer.value?.toFixed(2)}{' '}
+                    <span>
+                      {transfer.to.toLocaleLowerCase() ===
+                      walletAddress?.toLocaleLowerCase()
+                        ? 'IN'
+                        : 'OUT'}
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        {activityItem.value !== '0' && (
+          <div className="mr-2 mt-2 flex flex-row items-start justify-start">
+            <p className="rounded border border-gray-600 px-2 py-1 text-sm">
+              <img
+                src="/assets/images/eth-logos/eth-mainnet-image.png"
+                alt="ETH"
+                className="-mt-1 mr-2 inline-block h-5 w-5 rounded-full"
+              />
+              ETH: {Number(ethers.formatEther(activityItem.value)).toFixed(6)}{' '}
+              <span>
+                {activityItem.toAddress.toLocaleLowerCase() ===
+                walletAddress?.toLocaleLowerCase()
+                  ? 'IN'
+                  : 'OUT'}
+              </span>
+            </p>
           </div>
         )}
+      </div>
     </div>
   );
 };
