@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import makeBlockie from 'ethereum-blockies-base64';
 import { ethers } from 'ethers';
 import type { ReactElement } from 'react';
@@ -24,6 +25,7 @@ const ActivitySingle = ({ activityItem }: Props) => {
   const [tokenImages, setTokenImages] = useState<TokenImagesState>({});
 
   useMemo(() => {
+    // console.log('activityItem', activityItem);
     const fetchTokenImages = async () => {
       if (
         activityItem.assetTransfers &&

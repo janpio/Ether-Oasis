@@ -1,3 +1,32 @@
+export type Log = {
+  transactionHash: string;
+  address: string;
+  blockHash: string;
+  blockNumber: string;
+  data: string;
+  logIndex: string;
+  removed: boolean;
+  topics: string[];
+  transactionIndex: string;
+};
+
+export type TransactionReceipt = {
+  transactionHash: string;
+  blockHash: string;
+  blockNumber: string;
+  logs: Log[];
+  contractAddress: null;
+  effectiveGasPrice: string;
+  cumulativeGasUsed: string;
+  from: string;
+  gasUsed: string;
+  logsBloom: string;
+  status: string;
+  to: string;
+  transactionIndex: string;
+  type: string;
+};
+
 export type ActivityItem = {
   blockNumber: string;
   blockTimestamp: string;
@@ -9,6 +38,7 @@ export type ActivityItem = {
   value: string;
   assetTransfers?: Transfer[];
   contractInteraction?: string;
+  transactionReceipt?: TransactionReceipt;
 };
 
 export type ApiResponse = {
@@ -87,6 +117,12 @@ export type TransferResponseObject = {
   result: {
     transfers: Transfer[];
   };
+};
+
+export type TransactionResponse = {
+  jsonrpc: string;
+  id: number;
+  result: TransactionReceipt; // Assuming the transaction receipt object has its own type called TransactionReceipt
 };
 
 export const defaultTransfer: Transfer = {

@@ -22,11 +22,11 @@ import { truncateAddress } from '@/utils/truncateString';
 
 import prisma from '../../lib/prisma';
 
-type Props = {
-  users: any[];
-};
+// type Props = {
+//   users: any[];
+// };
 
-const Index: NextPage<Props> = ({ users }: Props) => {
+const Index: NextPage = () => {
   const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
   const [displayName, setDisplayName] = useState('');
   const [fetchedTokens, setFetchedTokens] = useState<AlchemyToken[]>([]);
@@ -49,11 +49,11 @@ const Index: NextPage<Props> = ({ users }: Props) => {
     updateVariables(walletAddr, ens, provider);
   };
 
-  useEffect(() => {
-    if (users) {
-      console.log('users', users);
-    }
-  }, [users]);
+  // useEffect(() => {
+  //   if (users) {
+  //     console.log('users', users);
+  //   }
+  // }, [users]);
 
   useEffect(() => {
     if (ensName && ensName !== '') {

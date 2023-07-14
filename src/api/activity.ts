@@ -10,6 +10,7 @@ import type {
   ActivityResponse,
   ApiResponse,
   TransactionHashes,
+  TransactionResponse,
   Transfer,
   TransferResponseObject,
 } from './types/activityTypes';
@@ -118,8 +119,31 @@ export const getActivity = async (
     ]
   );
 
+  console.log('response', response);
+
   await Promise.all(
     response.paginatedItems.map(async (item) => {
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: 1,
+          jsonrpc: '2.0',
+          params: [item.transactionHash],
+          method: 'eth_getTransactionReceipt',
+        }),
+      };
+
+      const txReceipt = await fetch(
+        `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+        options
+      );
+      const res: TransactionResponse = await txReceipt.json();
+      const transactionReceipt = res.result;
+
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,
         blockTimestamp: item.blockTimestamp,
@@ -129,6 +153,7 @@ export const getActivity = async (
         transactionHash: item.transactionHash,
         transactionIndex: item.transactionIndex,
         value: item.value,
+        transactionReceipt: transactionReceipt || undefined,
       };
 
       const contractInteraction = await getContractInteraction(activityItem);
