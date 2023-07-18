@@ -1,21 +1,11 @@
-/*
-  This file contains a whole boatload of ethereum smart contracts, indexed by address.
-  Each contract has it's corresponding name and type. Eventually, I'd also like to get the bytecode in there for each one too.
-  Long term, this should probably be stored in some type of database on the backend for greater efficiency.
-  TODO: Find a better way to build this list, LOL!
-*/
+/* eslint-disable no-plusplus */
+/* eslint-disable no-console */
+/* eslint-disable no-await-in-loop */
+import fs from 'fs';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import fetch from 'node-fetch';
 
-type ContractWithInfo = {
-  name: string;
-  type: 'Token' | 'NFT' | 'DEX' | 'Defi' | 'Bridge' | 'NFT Market' | 'Other';
-  abi?: any;
-};
-
-interface ContractNameAndAddress {
-  [contractAddress: string]: ContractWithInfo;
-}
-
-export const contractNamesByAddress: ContractNameAndAddress = {
+const contractNamesByAddress = {
   '0xdac17f958d2ee523a2206206994597c13d831ec7': {
     name: 'USDT',
     type: 'Token',
@@ -376,8 +366,76 @@ export const contractNamesByAddress: ContractNameAndAddress = {
     name: 'CryptoKitties',
     type: 'NFT',
   },
-  '0x0f7134ce138832c1456f2a91d64621ee90c2bddea': {
-    name: 'WorldCoin ID Manager',
-    type: 'Other',
-  },
 };
+
+const fetchContractABI = async (contractAddress) => {
+  try {
+    const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=EA99T64NAJB5Y6ZR7ADMANZZT3TFT35EET`;
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === '1') {
+        const { result } = data;
+        return result;
+      }
+    }
+
+    throw new Error(
+      `Failed to fetch ABI for contract at address ${contractAddress}.`
+    );
+  } catch (error) {
+    console.error(
+      `Failed to fetch ABI for contract at address ${contractAddress}:`,
+      error
+    );
+    throw error;
+  }
+};
+const sleep = (ms) => {
+  // eslint-disable-next-line no-promise-executor-return
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const updateContractsWithABI = async () => {
+  const updatedContracts = {};
+
+  const contractAddresses = Object.keys(contractNamesByAddress);
+
+  for (let i = 0; i < contractAddresses.length; i++) {
+    const contractAddress = contractAddresses[i];
+    if (!contractAddress || typeof contractAddress !== 'string') {
+      return;
+    }
+    const contract = contractNamesByAddress[contractAddress];
+
+    if (!contract) {
+      console.error(`No contract found for address ${contractAddress}`);
+      return;
+    }
+
+    try {
+      const abi = await fetchContractABI(contractAddress);
+      contract.abi = JSON.parse(abi);
+      updatedContracts[contractAddress] = contract;
+
+      if (i % 5 === 4) {
+        // Sleep for 1 second after every 5 requests to comply with the rate limit
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(1000);
+      }
+    } catch (error) {
+      console.error(
+        `Error updating contract at address ${contractAddress}:`,
+        error
+      );
+    }
+  }
+
+  // Write updatedContracts to a file
+  const outputFile = 'updatedContracts.json';
+  fs.writeFileSync(outputFile, JSON.stringify(updatedContracts, null, 2));
+  console.log(`Updated contracts saved to ${outputFile}`);
+};
+
+updateContractsWithABI();
