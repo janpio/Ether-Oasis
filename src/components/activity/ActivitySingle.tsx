@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+
+'use client';
+
 import makeBlockie from 'ethereum-blockies-base64';
 import { ethers } from 'ethers';
 import type { ReactElement } from 'react';
