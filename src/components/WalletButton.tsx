@@ -1,6 +1,9 @@
+/* eslint-disable lines-around-directive */
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/button-has-type */
+'use client';
+
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
