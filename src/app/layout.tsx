@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en-US">
       <GlobalContextProvider>
         <SkeletonTheme baseColor="#283146" highlightColor="#bee3f8">
           <body>

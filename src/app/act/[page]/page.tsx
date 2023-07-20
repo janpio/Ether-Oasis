@@ -6,6 +6,11 @@ import { defaultTransfer } from '@/api/types/activityTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 
+export const metadata = {
+  title: 'On Chain Activity',
+  description: 'A summary of all on chain activity for this wallet',
+};
+
 const fetchPageData = async (address: string, currentPage: string) => {
   console.log('fetching page data');
   const pageNumber = Number(currentPage) || 1;
