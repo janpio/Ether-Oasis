@@ -20,3 +20,10 @@ model User {
   updatedAt     DateTime  @updatedAt @map(name: "updated_at")
   @@map(name: "users")
 }
+
+model Contract {
+  address      String       @unique @id
+  name         String
+  type         String
+  abi          Json
+}
