@@ -1,5 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable tailwindcss/no-custom-classname */
+
+'use client';
+
 import React, { useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 

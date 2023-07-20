@@ -1,4 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+
+'use client';
+
 import makeBlockie from 'ethereum-blockies-base64';
 import { useContext, useEffect, useState } from 'react';
 
