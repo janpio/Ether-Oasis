@@ -11,7 +11,8 @@ import NameTag from '@/components/NameTag';
 import Portfolio from '@/components/Portfolio';
 import WalletButton from '@/components/WalletButton';
 
-import DisplayName from './DisplayName';
+import DisplayName from './home/DisplayName';
+import ImpersonatorForm from './home/ImpersonatorForm';
 
 export default async function Page() {
   const cookieStore = cookies();
@@ -64,32 +65,7 @@ export default async function Page() {
                 <p className="mt-4 text-xl">
                   Or, enter a wallet address to impersonate:
                 </p>
-                {/* 
-                  TODO: Bump this form down to client component and handle impersonation there
-                  <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    console.log('display name', addressToImpersonate);
-                    const ens = await fetchEns(addressToImpersonate);
-                    handleUpdate(addressToImpersonate, ens, null);
-                  }}
-                  className="mt-4 flex w-full flex-row items-center justify-center"
-                >
-                  <input
-                    className="mr-1 h-10 w-3/6 appearance-none rounded border border-blue-300 bg-blue-100 px-3 py-2 leading-tight text-gray-800 shadow"
-                    type="text"
-                    placeholder="0x..."
-                    onChange={(e) => {
-                      setAddressToImpersonate(e.target.value);
-                    }}
-                  />
-                  <button
-                    className="wallet-button h-10 rounded border border-blue-200 bg-blue-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-800 hover:text-blue-200"
-                    type="submit"
-                  >
-                    Impersonate
-                  </button>
-                </form> */}
+                <ImpersonatorForm />
               </div>
             }
             centerContent

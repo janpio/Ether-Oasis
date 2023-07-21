@@ -4,5 +4,5 @@ export const AppConfig = {
   site_name: 'EtherOasis',
   title: 'Ether Oasis',
   description: 'Trade, Track, Hang.',
-  locale: 'en',
+  locale: 'en-US',
 };

@@ -13,8 +13,8 @@ import { GlobalContextProvider } from '@/context/GlobalContext';
 import { AppConfig } from '@/utils/AppConfig';
 
 export const metadata = {
-  title: 'Ether Oasis',
-  description: 'Trade, Track, Hang.',
+  title: AppConfig.title,
+  description: AppConfig.description,
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-US">
+    <html lang={AppConfig.locale}>
       <GlobalContextProvider>
         <SkeletonTheme baseColor="#283146" highlightColor="#bee3f8">
           <body>
