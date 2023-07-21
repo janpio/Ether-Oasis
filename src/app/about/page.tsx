@@ -1,8 +1,11 @@
-import { Meta } from '@/layouts/Meta';
-import { Main } from '@/templates/Main';
+export const metadata = {
+  title: 'About Ether Oasis',
+  description:
+    'Ether Oasis is a wallet tracking app for the multi chain world of Ethereum.',
+};
 
 const About = () => (
-  <Main meta={<Meta title="About Ether Oasis" description="Lorem ipsum" />}>
+  <section>
     <p>
       Welcome to Ether Oasis, the web app that aims to provide users with a
       seamless way to view and manage their Ethereum wallets as a personalized
@@ -10,7 +13,7 @@ const About = () => (
       complexities of cryptocurrencies, making it accessible to users of all
       levels of expertise.
     </p>
-    <p>
+    <p className="mt-4">
       Ether Oasis offers a user-friendly interface that centralizes your
       Ethereum assets, including tokens and non-fungible tokens (NFTs). Through
       our app, users can effortlessly track their token balances, transaction
@@ -18,14 +21,14 @@ const About = () => (
       information in a clear and intuitive manner, allowing you to easily
       navigate and understand your Ethereum profile.
     </p>
-    <p>
+    <p className="mt-4">
       As Ether Oasis continues to evolve, our ambitions expand alongside it. We
       envision enhancing the app with advanced features and analytics tools that
       provide deeper insights into your on-chain activities. Our goal is to
       empower you to make informed decisions by offering valuable data and
       visualizations related to your Ethereum profile.
     </p>
-    <p>
+    <p className="mt-4">
       Join Ether Oasis on this exciting journey as we strive to build a valuable
       resource for individuals looking to explore and leverage the potential of
       Ethereum. We are committed to listening to user feedback and incorporating
@@ -33,7 +36,7 @@ const About = () => (
       and comprehensive platform for managing and exploring your Ethereum
       profile.
     </p>
-  </Main>
+  </section>
 );
 
 export default About;

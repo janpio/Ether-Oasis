@@ -1,6 +1,9 @@
+/* eslint-disable lines-around-directive */
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react/button-has-type */
+'use client';
+
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
@@ -8,6 +11,7 @@ import walletConnectModule from '@web3-onboard/walletconnect';
 import type { JsonRpcProvider } from 'ethers';
 import { ethers } from 'ethers';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
@@ -56,6 +60,7 @@ const WalletButton = () => {
   const { walletAddress, ensName, updateVariables } = useContext(GlobalContext);
   const [isConnected, setIsConnected] = useState(false); // New state to track connection status
   const [isMousingOver, setIsMousingOver] = useState(false); // New state to track mouseover status
+  const router = useRouter();
 
   const handleUpdate = (
     walletAddr: string,
@@ -174,6 +179,7 @@ const WalletButton = () => {
       setIsMousingOver(false);
       setIsConnected(true);
       Cookies.set('walletAddress', signer.address); // Store the wallet address
+      router.refresh();
     }
   };
 
@@ -185,6 +191,7 @@ const WalletButton = () => {
     handleUpdate('', '', null);
     setIsConnected(false);
     Cookies.remove('walletAddress'); // Remove the stored wallet address
+    router.push('/');
   };
 
   if (walletAddress !== '') {

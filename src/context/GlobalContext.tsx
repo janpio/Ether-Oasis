@@ -1,3 +1,5 @@
+'use client';
+
 import type { ethers } from 'ethers';
 import type { ReactNode } from 'react';
 import React, { createContext, useMemo, useState } from 'react';
