@@ -11,7 +11,7 @@ import NameTag from '@/components/NameTag';
 import Portfolio from '@/components/Portfolio';
 import WalletButton from '@/components/WalletButton';
 
-import DisplayName from './home/DisplayName';
+import DisplayName from '../components/DisplayName';
 import ImpersonatorForm from './home/ImpersonatorForm';
 
 export default async function Page() {
@@ -77,7 +77,7 @@ export default async function Page() {
 
   return (
     <div>
-      <NameTag />
+      <NameTag walletAddress={walletAddress} />
       <div className="flex flex-row">
         <div className="mr-2 flex w-1/2 flex-col items-start justify-start">
           <Card

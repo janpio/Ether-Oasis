@@ -1,27 +1,15 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-
-'use client';
-
 import makeBlockie from 'ethereum-blockies-base64';
-import { useContext, useEffect, useState } from 'react';
 
-import { GlobalContext } from '@/context/GlobalContext';
 import { truncateString } from '@/utils/truncateString';
 
-const NameTag = () => {
-  const { walletAddress, ensName } = useContext(GlobalContext);
-  const [displayName, setDisplayName] = useState('');
+import DisplayName from './DisplayName';
 
-  useEffect(() => {
-    if (ensName && ensName !== '') {
-      setDisplayName(ensName);
-    } else if (walletAddress && walletAddress !== '') {
-      setDisplayName(walletAddress);
-    } else if (walletAddress === '') {
-      setDisplayName('');
-    }
-  }, [walletAddress, ensName]);
+type NameTagProps = {
+  walletAddress: string;
+};
 
+const NameTag = ({ walletAddress }: NameTagProps) => {
   return (
     <div className="mb-4 mt-2 flex flex-row items-start justify-start">
       <div className="ml-5">
@@ -34,12 +22,12 @@ const NameTag = () => {
         )}
       </div>
       <div className="ml-5">
-        <p className="-mt-1 text-2xl">{displayName}</p>
-        {displayName !== walletAddress && (
-          <p className="mt-1 text-base text-gray-600">
-            {truncateString(walletAddress)}
-          </p>
-        )}
+        <p className="-mt-1 text-2xl">
+          <DisplayName walletAddress={walletAddress} />
+        </p>
+        <p className="mt-1 text-base text-gray-600">
+          {truncateString(walletAddress)}
+        </p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@
 
 import type { ethers } from 'ethers';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 
 import { GlobalContext } from '@/context/GlobalContext';
@@ -12,6 +13,7 @@ import { fetchEns } from '@/utils/fetchEns';
 export default function ImpersonatorForm() {
   const { updateVariables } = useContext(GlobalContext);
   const [addressToImpersonate, setAddressToImpersonate] = useState('');
+  const router = useRouter();
 
   const handleUpdate = (
     walletAddr: string,
@@ -20,6 +22,7 @@ export default function ImpersonatorForm() {
   ) => {
     Cookies.set('walletAddress', walletAddr);
     updateVariables(walletAddr, ens, provider);
+    router.push('/');
   };
 
   return (
