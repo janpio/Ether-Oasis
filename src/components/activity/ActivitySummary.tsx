@@ -58,7 +58,13 @@ const ActivitySummary = ({
     return (
       <div className="mt-3 flex flex-col">
         <div className="mt-2">
-          <Skeleton count={8} height={145} className="mb-8" />
+          <Skeleton
+            baseColor="#283146"
+            highlightColor="#bee3f8"
+            count={8}
+            height={145}
+            className="mb-8"
+          />
         </div>
       </div>
     );

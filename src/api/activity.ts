@@ -7,6 +7,7 @@ import { parse0xSwap } from '@/utils/parse0xSwap';
 import { loadProvider } from '@/utils/providers';
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
 
+import prisma from '../../lib/prisma';
 import type {
   ActivityItem,
   ActivityResponse,
@@ -27,6 +28,19 @@ const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY;
 // };
 
 export const fetchContractABI = async (contractAddress: string) => {
+  const cachedABI = await prisma.contract.findUnique({
+    where: {
+      address: contractAddress,
+    },
+  });
+
+  if (cachedABI) {
+    console.log('cached abi found');
+    return cachedABI.abi;
+  }
+
+  console.log('cached abi not found');
+
   try {
     const url = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
     const response = await fetch(url);

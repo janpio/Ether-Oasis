@@ -1,6 +1,7 @@
 'use client';
 
 import { useContext, useEffect, useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
 
 import { GlobalContext } from '@/context/GlobalContext';
 import { truncateAddress } from '@/utils/truncateString';
@@ -22,6 +23,12 @@ export default function DisplayName({ walletAddress }: DisplayNameProps) {
       setDisplayName('');
     }
   }, [walletAddress, ensName]);
+
+  if (!walletAddress || walletAddress === '') {
+    return (
+      <Skeleton baseColor="#283146" highlightColor="#bee3f8" width={200} />
+    );
+  }
 
   return <span>{displayName}</span>;
 }

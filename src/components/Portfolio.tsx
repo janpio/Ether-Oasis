@@ -37,7 +37,11 @@ const Portfolio = ({ tokensInWallet, ethPrice, fetching }: PortfolioProps) => {
         <div className="flex flex-row items-center justify-between">
           <div className="-mt-3 text-2xl font-bold">Portfolio</div>
           <div className="ml-2 text-2xl font-bold">
-            <Skeleton width={120} />
+            <Skeleton
+              baseColor="#283146"
+              highlightColor="#bee3f8"
+              width={120}
+            />
           </div>
         </div>
         <table className="portfolio-table mt-2 table-fixed">
@@ -52,44 +56,104 @@ const Portfolio = ({ tokensInWallet, ethPrice, fetching }: PortfolioProps) => {
           <tbody className="text-lg">
             <tr className="border-b border-gray-700">
               <td>
-                <Skeleton width={50} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={50}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td className="text-right">
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
             </tr>
             <tr className="border-b border-gray-700">
               <td>
-                <Skeleton width={50} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={50}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td className="text-right">
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
             </tr>
             <tr className="border-b border-gray-700">
               <td>
-                <Skeleton width={50} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={50}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td>
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
               <td className="text-right">
-                <Skeleton width={75} height={28} />
+                <Skeleton
+                  baseColor="#283146"
+                  highlightColor="#bee3f8"
+                  width={75}
+                  height={28}
+                />
               </td>
             </tr>
           </tbody>
