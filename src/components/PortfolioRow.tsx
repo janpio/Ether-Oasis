@@ -47,7 +47,7 @@ const PortfolioRow = ({ token, tokenPrice }: PortfolioRowProps) => {
           ? '<0.001'
           : tokenPrice?.toFixed(3).replace(/\.?0+$/, '')}
       </td>
-      <td className="w-3/12 text-left">{totalBalance.toFixed(5)}</td>
+      <td className="w-3/12 text-left">{totalBalance.toFixed(3)}</td>
       <td className="w-2/12 text-right">${formattedValue}</td>
     </tr>
   );

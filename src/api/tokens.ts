@@ -204,14 +204,15 @@ export const getAlchemyTokens = async (
           const metadata = await res2.json();
 
           // Compute token balance in human-readable format
-          balance /= 10 ** metadata.result.decimals;
+          // eslint-disable-next-line no-unsafe-optional-chaining
+          balance /= 10 ** metadata?.result?.decimals;
           balance = balance.toFixed(5);
           const combinedToken: AlchemyToken = {
             ...metadata.result,
             balance,
             ...token,
           };
-          if (combinedToken.symbol.length < 8 && Number(balance) >= 0.01) {
+          if (combinedToken?.symbol?.length < 8 && Number(balance) >= 0.01) {
             alchemyTokens.push(combinedToken);
           }
         }
@@ -295,10 +296,18 @@ export const getAlchemyTokens = async (
 
   updatedReturn.unshift(etherMainnetHoldingsAsAlchemyToken);
   // console.log('updatedReturn:', updatedReturn);
-  return updatedReturn;
+
+  const returnWithoutZeroPrices = updatedReturn.filter(
+    (token) => Number(token.price) > 0
+  );
+
+  return returnWithoutZeroPrices;
 };
 
 export const getTokenImage = async (tokenSymbol: string): Promise<string> => {
+  if (!tokenSymbol) {
+    return defaultTokenImage;
+  }
   const tokenId = findIdBySymbol(tokenSymbol.toLowerCase());
   try {
     const response = await fetch(

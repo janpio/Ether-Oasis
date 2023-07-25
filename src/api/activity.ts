@@ -53,7 +53,6 @@ export const fetchContractABI = async (contractAddress: string) => {
   });
 
   if (cachedABI) {
-    console.log('cached abi found');
     return cachedABI.abi;
   }
 
@@ -117,12 +116,6 @@ export const addContractToDB = async (address: string) => {
 };
 
 export const getContractInteraction = async (transaction: ActivityItem) => {
-  // const isContractAddress = await checkIfContractAddress(transaction.toAddress);
-
-  // if (!isContractAddress) {
-  //   return null;
-  // }
-
   const provider = await loadProvider('mainnet');
 
   const receipt = await provider.getTransaction(transaction.transactionHash);
@@ -179,13 +172,15 @@ export const getActivity = async (
     totalPages: 1,
   };
 
+  // TODO: Somehow rework this to handle the case where there are > 200 pages of activity
+  // As of now > 200 pages gives only the oldest 200 pages of activity, so we need to get the latest txns too
   const response: ApiResponse = await quickNodeProvider.send(
     'qn_getTransactionsByAddress',
     [
       {
         address: walletAddress,
         page: localPageNumber,
-        perPage: 5,
+        perPage: 15,
       },
     ]
   );
@@ -249,9 +244,11 @@ export const getActivity = async (
         isContractAddress: isContractAddress || undefined,
       };
 
-      const contractInteraction = await getContractInteraction(activityItem);
-      if (contractInteraction) {
-        activityItem.contractInteraction = contractInteraction.method;
+      if (isContractAddress) {
+        const contractInteraction = await getContractInteraction(activityItem);
+        if (contractInteraction) {
+          activityItem.contractInteraction = contractInteraction.method;
+        }
       }
       // console.log('activity item receipt', contractInteraction);
       activityItems.push(activityItem);

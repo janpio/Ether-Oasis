@@ -29,13 +29,10 @@ async function seedDatabase() {
     const token = contracts[address];
     if (token) {
       const { name, type, abi } = token;
-      await prisma.contract.create({
-        data: {
-          address, // Using the unique address as the identifier
-          name,
-          type,
-          abi: JSON.stringify(abi), // Store ABI as a JSON string in the database
-        },
+      await prisma.contract.upsert({
+        where: { address },
+        update: { name, type, abi },
+        create: { address, name, type, abi },
       });
     }
   }

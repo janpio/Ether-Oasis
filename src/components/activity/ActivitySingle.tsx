@@ -8,7 +8,6 @@ import type { ReactElement } from 'react';
 import { useContext, useMemo, useState } from 'react';
 import { format } from 'timeago.js';
 
-// import { checkIfContractAddress } from '@/api/activity';
 import { getTokenImage } from '@/api/tokens';
 import type { ActivityItem } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
@@ -27,10 +26,9 @@ type TokenImagesState = {
 const ActivitySingle = ({ activityItem }: Props) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [tokenImages, setTokenImages] = useState<TokenImagesState>({});
-  // const [isContract, setIsContract] = useState<boolean>(false);
 
   useMemo(() => {
-    console.log('activityItem', activityItem);
+    // console.log('activityItem', activityItem);
     const fetchTokenImages = async () => {
       if (
         activityItem.assetTransfers &&
@@ -49,17 +47,6 @@ const ActivitySingle = ({ activityItem }: Props) => {
     fetchTokenImages();
   }, [activityItem]);
 
-  // useMemo(() => {
-  //   const checkIfContract = async () => {
-  //     if (activityItem.toAddress) {
-  //       const isContractAddress = await checkIfContractAddress(
-  //         activityItem.toAddress
-  //       );
-  //       setIsContract(isContractAddress);
-  //     }
-  //   };
-  //   checkIfContract();
-  // }, [activityItem]);
   // takes the ActivityItem object and returns a string or ReactElement
   const activityInterpreter = (item: ActivityItem) => {
     const interactionValue = item.value === '0' ? null : item.value;
@@ -170,7 +157,7 @@ const ActivitySingle = ({ activityItem }: Props) => {
   };
 
   return (
-    <div className="mt-4 flex flex-col rounded border border-blue-300 p-3">
+    <div className="mt-4 flex w-full flex-col rounded border border-blue-300 p-3">
       <div className="flex w-full flex-row items-center">
         {walletAddress && walletAddress !== '' && (
           <img
@@ -187,6 +174,21 @@ const ActivitySingle = ({ activityItem }: Props) => {
           </p>
           <p>{format(activityItem.blockTimestamp)}</p>
         </div>
+        <span className="mb-auto ml-auto text-blue-500 hover:text-blue-300">
+          {activityItem.transactionHash && (
+            <a
+              href={`https://etherscan.io/tx/${activityItem.transactionHash}`}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-4 text-blue-500 hover:text-blue-300"
+            >
+              {/*
+                TODO: Replace this text with the Etherscan logo
+              */}
+              View on Etherscan
+            </a>
+          )}
+        </span>
       </div>
       <p className="mt-2">{activityInterpreter(activityItem)}</p>
       <div className="flex flex-row items-start justify-start">
