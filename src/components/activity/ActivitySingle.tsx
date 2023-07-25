@@ -8,6 +8,7 @@ import type { ReactElement } from 'react';
 import { useContext, useMemo, useState } from 'react';
 import { format } from 'timeago.js';
 
+// import { checkIfContractAddress } from '@/api/activity';
 import { getTokenImage } from '@/api/tokens';
 import type { ActivityItem } from '@/api/types/activityTypes';
 import { defaultTransfer } from '@/api/types/activityTypes';
@@ -26,9 +27,10 @@ type TokenImagesState = {
 const ActivitySingle = ({ activityItem }: Props) => {
   const { walletAddress, ensName } = useContext(GlobalContext);
   const [tokenImages, setTokenImages] = useState<TokenImagesState>({});
+  // const [isContract, setIsContract] = useState<boolean>(false);
 
   useMemo(() => {
-    // console.log('activityItem', activityItem);
+    console.log('activityItem', activityItem);
     const fetchTokenImages = async () => {
       if (
         activityItem.assetTransfers &&
@@ -47,6 +49,17 @@ const ActivitySingle = ({ activityItem }: Props) => {
     fetchTokenImages();
   }, [activityItem]);
 
+  // useMemo(() => {
+  //   const checkIfContract = async () => {
+  //     if (activityItem.toAddress) {
+  //       const isContractAddress = await checkIfContractAddress(
+  //         activityItem.toAddress
+  //       );
+  //       setIsContract(isContractAddress);
+  //     }
+  //   };
+  //   checkIfContract();
+  // }, [activityItem]);
   // takes the ActivityItem object and returns a string or ReactElement
   const activityInterpreter = (item: ActivityItem) => {
     const interactionValue = item.value === '0' ? null : item.value;

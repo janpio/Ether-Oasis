@@ -53,6 +53,7 @@ export type ActivityItem = {
   contractName?: string;
   contractType?: string;
   swapData?: Swap;
+  isContractAddress?: boolean;
 };
 
 export type ApiResponse = {

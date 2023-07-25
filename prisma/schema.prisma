@@ -23,7 +23,7 @@ model User {
 
 model Contract {
   address      String       @unique @id
-  name         String
-  type         String
-  abi          Json
+  name         String?
+  type         String?
+  abi          Json?
 }

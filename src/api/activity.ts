@@ -1,5 +1,7 @@
 /* eslint-disable no-bitwise */
 /* eslint-disable no-console */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Alchemy, Network } from 'alchemy-sdk';
 import { ethers } from 'ethers';
 
 import { contractNamesByAddress } from '@/data/contractsAndNames';
@@ -26,6 +28,22 @@ const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_MAINNET_API_KEY;
 //   const code = await quickNodeProvider.getCode(address);
 //   return code !== '0x';
 // };
+
+export const checkIfContractAddress = async (address: string) => {
+  const config = {
+    apiKey: ALCHEMY_API_KEY,
+    network: Network.ETH_MAINNET,
+  };
+
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    const result = await alchemy.core.isContractAddress(address);
+    return result;
+  };
+
+  return main();
+};
 
 export const fetchContractABI = async (contractAddress: string) => {
   const cachedABI = await prisma.contract.findUnique({
@@ -65,6 +83,39 @@ export const fetchContractABI = async (contractAddress: string) => {
   }
 };
 
+export const addContractToDB = async (address: string) => {
+  const contractInDB = await prisma.contract.findUnique({
+    where: {
+      address,
+    },
+  });
+
+  if (contractInDB) {
+    console.log('contract already in db');
+    return null;
+  }
+
+  const abi = await fetchContractABI(address);
+
+  if (!abi || abi === 0) {
+    console.log('no abi found');
+    return null;
+  }
+
+  try {
+    const contract = await prisma.contract.create({
+      data: {
+        address,
+        abi,
+      },
+    });
+    return contract;
+  } catch (error) {
+    console.error('error adding contract to db', error);
+    return null;
+  }
+};
+
 export const getContractInteraction = async (transaction: ActivityItem) => {
   // const isContractAddress = await checkIfContractAddress(transaction.toAddress);
 
@@ -75,6 +126,10 @@ export const getContractInteraction = async (transaction: ActivityItem) => {
   const provider = await loadProvider('mainnet');
 
   const receipt = await provider.getTransaction(transaction.transactionHash);
+
+  if (!transaction.toAddress) {
+    return null;
+  }
 
   const contractABI = await fetchContractABI(transaction.toAddress);
 
@@ -137,6 +192,12 @@ export const getActivity = async (
 
   await Promise.all(
     response.paginatedItems.map(async (item) => {
+      if (!item.toAddress) {
+        // TODO: handle this case, and return a contract creation activity item
+        console.log('toAddress is undefined for item:', item);
+        return;
+      }
+
       const options = {
         method: 'POST',
         headers: {
@@ -157,6 +218,7 @@ export const getActivity = async (
       );
       const res: TransactionResponse = await txReceipt.json();
       const transactionReceipt = res.result;
+      // TODO: rework all that uses contractNamesByAddress to use the DB instead
       const contractName = contractNamesByAddress[item.toAddress]?.name
         ? contractNamesByAddress[item.toAddress]?.name
         : item.toAddress;
@@ -165,6 +227,11 @@ export const getActivity = async (
         contractName === '0x Exchange'
           ? await parse0xSwap(item.transactionHash)
           : null;
+      const isContractAddress = await checkIfContractAddress(item.toAddress);
+
+      if (isContractAddress) {
+        await addContractToDB(item.toAddress.toLocaleLowerCase());
+      }
 
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,
@@ -179,6 +246,7 @@ export const getActivity = async (
         contractName: contractName || undefined,
         contractType: contractType || undefined,
         swapData: swapData || undefined,
+        isContractAddress: isContractAddress || undefined,
       };
 
       const contractInteraction = await getContractInteraction(activityItem);
