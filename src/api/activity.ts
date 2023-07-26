@@ -4,7 +4,6 @@
 import { Alchemy, Network } from 'alchemy-sdk';
 import { ethers } from 'ethers';
 
-import { contractNamesByAddress } from '@/data/contractsAndNames';
 import { parse0xSwap } from '@/utils/parse0xSwap';
 import { loadProvider } from '@/utils/providers';
 import { quickNodeProvider } from '@/utils/quickNodeProvider';
@@ -213,20 +212,25 @@ export const getActivity = async (
       );
       const res: TransactionResponse = await txReceipt.json();
       const transactionReceipt = res.result;
-      // TODO: rework all that uses contractNamesByAddress to use the DB instead
-      const contractName = contractNamesByAddress[item.toAddress]?.name
-        ? contractNamesByAddress[item.toAddress]?.name
-        : item.toAddress;
-      const contractType = contractNamesByAddress[item.toAddress]?.type;
-      const swapData =
-        contractName === '0x Exchange'
-          ? await parse0xSwap(item.transactionHash)
-          : null;
       const isContractAddress = await checkIfContractAddress(item.toAddress);
 
       if (isContractAddress) {
         await addContractToDB(item.toAddress.toLocaleLowerCase());
       }
+      const cachedContract = await prisma.contract.findUnique({
+        where: {
+          address: item.toAddress.toLocaleLowerCase(),
+        },
+      });
+
+      const contractName = cachedContract?.name
+        ? cachedContract?.name
+        : item.toAddress;
+      const contractType = cachedContract?.type;
+      const swapData =
+        contractName === '0x Exchange'
+          ? await parse0xSwap(item.transactionHash)
+          : null;
 
       const activityItem: ActivityItem = {
         blockNumber: item.blockNumber,

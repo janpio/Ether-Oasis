@@ -182,10 +182,11 @@ const ActivitySingle = ({ activityItem }: Props) => {
               rel="noreferrer"
               className="ml-4 text-blue-500 hover:text-blue-300"
             >
-              {/*
-                TODO: Replace this text with the Etherscan logo
-              */}
-              View on Etherscan
+              <img
+                src="/assets/images/etherscan-logo.png"
+                alt="Ether Oasis Logo"
+                className="-mt-4 mb-4 mr-1 h-5 w-5 no-underline hover:no-underline"
+              />
             </a>
           )}
         </span>
