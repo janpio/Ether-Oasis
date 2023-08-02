@@ -8,7 +8,7 @@ import type { AlchemyToken } from '@/api/types/tokenTypes';
 import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 import NameTag from '@/components/NameTag';
-import Portfolio from '@/components/Portfolio';
+import Portfolio from '@/components/portfolio/Portfolio';
 import WalletButton from '@/components/WalletButton';
 
 import DisplayName from '../components/DisplayName';

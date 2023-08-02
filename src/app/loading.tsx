@@ -4,7 +4,7 @@ import ActivitySummary from '@/components/activity/ActivitySummary';
 import Card from '@/components/Card';
 import DisplayName from '@/components/DisplayName';
 import NameTag from '@/components/NameTag';
-import Portfolio from '@/components/Portfolio';
+import Portfolio from '@/components/portfolio/Portfolio';
 
 export default function Loading() {
   const cookieStore = cookies();

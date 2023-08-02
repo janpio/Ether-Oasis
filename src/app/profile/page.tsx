@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 
 import Card from '@/components/Card';
 import NameTag from '@/components/NameTag';
+import Profile from '@/components/profile/Profile';
 import WalletButton from '@/components/WalletButton';
 
 export const metadata = {
@@ -9,7 +10,7 @@ export const metadata = {
   description: 'Manage your EtherOasis Profile.',
 };
 
-const Profile = () => {
+const ProfilePage = () => {
   const cookieStore = cookies();
   const walletAddress = cookieStore.get('walletAddress')?.value;
 
@@ -22,7 +23,11 @@ const Profile = () => {
             title="No Wallet Connected"
             content={
               <div className="flex w-full flex-col items-center justify-center">
-                <div className="flex w-full flex-row items-center justify-center">
+                <div className="mt-5 flex w-full flex-col items-center justify-center">
+                  <p className="mb-5 text-xl">
+                    Please connect your wallet to view your profile and manage
+                    your account.
+                  </p>
                   <WalletButton />
                 </div>
               </div>
@@ -36,11 +41,9 @@ const Profile = () => {
   return (
     <section>
       <NameTag walletAddress={walletAddress} />
-      <h2>
-        <span className="text-2xl font-bold">My Profile</span>
-      </h2>
+      <Profile />
     </section>
   );
 };
 
-export default Profile;
+export default ProfilePage;
